@@ -48,7 +48,7 @@ console.log(wallet.paymentAddr);
 
 Check /examples for more use cases.
 
-### API
+## API
 
 ## Classes
 
@@ -539,7 +539,7 @@ Check /examples for more use cases.
 | ------------------- |
 | <code>string</code> |
 
-### Structure
+## Structure
 
 All files will be stored and used in the directory you choose when instantiating CardanoJs (<code>dir</code>).
 The directory is split in two subfolders <code>tmp</code> and <code>priv</code>.
