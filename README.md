@@ -27,7 +27,7 @@ cd CardanoJs
 npm install
 ```
 
-## Getting started
+### Getting started
 
 ```javascript
 const CardanoJs = require("cardanoJs");
@@ -48,12 +48,12 @@ console.log(wallet.paymentAddr);
 
 Check /examples for more use cases.
 
-## API
+### API
 
 ## Classes
 
 <dl>
-<dt><a href="#CardanoJsClass">CardanoJs</a></dt>
+<dt><a href="#CardanoJs">CardanoJs</a></dt>
 <dd></dd>
 </dl>
 
@@ -72,7 +72,7 @@ Check /examples for more use cases.
 
 <a name="CardanoJs"></a>
 
-## <span id="CardanoJsClass">CardanoJs</span>
+## CardanoJs
 
 **Kind**: global class
 
@@ -356,18 +356,18 @@ Check /examples for more use cases.
 
 **Kind**: instance method of [<code>CardanoJs</code>](#CardanoJs)
 
-| Param                 | Type                                     | Description |
-| --------------------- | ---------------------------------------- | ----------- | ---------------- |
-| poolName              | <code>string</code>                      |             | Name of the pool |
-| options               | <code>Object</code>                      |             |
-| options.pledge        | [<code>lovelace</code>](#lovelace)       |             |
-| options.margin        | <code>number</code>                      |             |
-| options.cost          | [<code>lovelace</code>](#lovelace)       |             |
-| options.url           | <code>string</code>                      |             |
-| options.metaHash      | <code>string</code>                      |             |
-| options.rewardAccount | [<code>path</code>](#path)               |             |
-| options.owners        | [<code>Array.&lt;path&gt;</code>](#path) |             |
-| options.relays        | <code>Array.&lt;Object&gt;</code>        |             |
+| Param                 | Type                                     | Description      |
+| --------------------- | ---------------------------------------- | ---------------- |
+| poolName              | <code>string</code>                      | Name of the pool |
+| options               | <code>Object</code>                      |                  |
+| options.pledge        | [<code>lovelace</code>](#lovelace)       |                  |
+| options.margin        | <code>number</code>                      |                  |
+| options.cost          | [<code>lovelace</code>](#lovelace)       |                  |
+| options.url           | <code>string</code>                      |                  |
+| options.metaHash      | <code>string</code>                      |                  |
+| options.rewardAccount | [<code>path</code>](#path)               |                  |
+| options.owners        | [<code>Array.&lt;path&gt;</code>](#path) |                  |
+| options.relays        | <code>Array.&lt;Object&gt;</code>        |                  |
 
 <a name="CardanoJs+stakePoolDeregistrationCertificate"></a>
 
@@ -375,10 +375,10 @@ Check /examples for more use cases.
 
 **Kind**: instance method of [<code>CardanoJs</code>](#CardanoJs)
 
-| Param    | Type                | Description |
-| -------- | ------------------- | ----------- | ---------------- |
-| poolName | <code>string</code> |             | Name of the pool |
-| epoch    | <code>number</code> |             | Retirement Epoch |
+| Param    | Type                | Description      |
+| -------- | ------------------- | ---------------- |
+| poolName | <code>string</code> | Name of the pool |
+| epoch    | <code>number</code> | Retirement Epoch |
 
 <a name="CardanoJs+transactionBuildRaw"></a>
 
@@ -539,7 +539,7 @@ Check /examples for more use cases.
 | ------------------- |
 | <code>string</code> |
 
-## Structure
+### Structure
 
 All files will be stored and used in the directory you choose when instantiating CardanoJs (<code>dir</code>).
 The directory is split in two subfolders <code>tmp</code> and <code>priv</code>.

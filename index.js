@@ -440,7 +440,7 @@ class CardanoJs {
   }
 
   /**
-   * @param {string} poolName | Name of the pool
+   * @param {string} poolName - Name of the pool
    * @param {Object} options
    * @param {lovelace} options.pledge
    * @param {number} options.margin
@@ -489,8 +489,8 @@ class CardanoJs {
 
   /**
    *
-   * @param {string} poolName |Name of the pool
-   * @param {number} epoch | Retirement Epoch
+   * @param {string} poolName - Name of the pool
+   * @param {number} epoch - Retirement Epoch
    * @returns {path}
    */
   stakePoolDeregistrationCertificate(poolName, epoch) {
