@@ -2,12 +2,20 @@ const CardanoJs = require("./index.js");
 const os = require("os");
 const path = require("path");
 
-const shelleyPath = "/opt/cardano/pi-core/files/mainnet-shelley-genesis.json";
+const dir = path.join(os.homedir(), "testnet");
+const shelleyPath = path.join(os.homedir(), "testnet", "testnet-shelley-genesis.json");
 
 const cardanoJs = new CardanoJs({
   era: "allegra",
+  network:"testnet-magic 1097911063",
+  dir:dir,
   shelleyGenesisPath: shelleyPath,
+  cliPath: path.join(os.homedir(),".local", "bin", "cardano-cli")
 });
+
+console.log(cardanoJs.queryProtcolParameters());
+
+console.log(cardanoJs.queryTip());
 
 //query utxo of an address
 // console.log(
@@ -109,41 +117,41 @@ const cardanoJs = new CardanoJs({
 
 // let cert = cardanoJs.stakePoolRegistrationCertificate("Cool", pool);
 
-let tx = {
-  txIn: cardanoJs.queryUtxo(
-    "Ae2tdPwUPEYwNguM7TB3dMnZMfZxn1pjGHyGdjaF4mFqZF9L3bj6cdhiH8t"
-  ),
-  txOut: [
-    {
-      address: "Ae2tdPwUPEYwNguM7TB3dMnZMfZxn1pjGHyGdjaF4mFqZF9L3bj6cdhiH8t",
-      amount: 1000000,
-    },
-  ],
-  witnessCount: 3,
-  certs: [cardanoJs.wallet("Wow").file("deleg.cert").path],
-  withdrawal: {
-    stakingAddress: cardanoJs.wallet("Wow").summary.stakingAddr,
-    reward: 0,
-  },
-};
+// let tx = {
+//   txIn: cardanoJs.queryUtxo(
+//     "Ae2tdPwUPEYwNguM7TB3dMnZMfZxn1pjGHyGdjaF4mFqZF9L3bj6cdhiH8t"
+//   ),
+//   txOut: [
+//     {
+//       address: "Ae2tdPwUPEYwNguM7TB3dMnZMfZxn1pjGHyGdjaF4mFqZF9L3bj6cdhiH8t",
+//       amount: 1000000,
+//     },
+//   ],
+//   witnessCount: 3,
+//   certs: [cardanoJs.wallet("Wow").file("deleg.cert").path],
+//   withdrawal: {
+//     stakingAddress: cardanoJs.wallet("Wow").summary.stakingAddr,
+//     reward: 0,
+//   },
+// };
 
-let txBody = cardanoJs.transactionBuildRaw(tx);
+// let txBody = cardanoJs.transactionBuildRaw(tx);
 
-//witness0
-let txWitness = cardanoJs.transactionWitness({
-  txBody: txBody,
-  signingKey: cardanoJs.wallet("Wow").file("payment.skey").path,
-});
+// //witness0
+// let txWitness = cardanoJs.transactionWitness({
+//   txBody: txBody,
+//   signingKey: cardanoJs.wallet("Wow").file("payment.skey").path,
+// });
 
-//witness1
-let txWitness1 = cardanoJs.transactionWitness({
-  txBody: txBody,
-  signingKey: cardanoJs.wallet("Wow").file("payment.skey").path,
-});
+// //witness1
+// let txWitness1 = cardanoJs.transactionWitness({
+//   txBody: txBody,
+//   signingKey: cardanoJs.wallet("Wow").file("payment.skey").path,
+// });
 
-let txSigned = cardanoJs.transactionAssemble({
-  txBody: txBody,
-  witnessFiles: [txWitness, txWitness1],
-});
+// let txSigned = cardanoJs.transactionAssemble({
+//   txBody: txBody,
+//   witnessFiles: [txWitness, txWitness1],
+// });
 
-console.log(txSigned);
+// console.log(txSigned);
