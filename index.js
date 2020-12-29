@@ -44,6 +44,9 @@ class CardanoJs {
     this.queryProtcolParameters();
   }
 
+  /**
+   * @returns {JSON}
+   */
   queryProtcolParameters() {
     execSync(`${this.cliPath} query protocol-parameters \
                             ${this.network} \
@@ -55,6 +58,9 @@ class CardanoJs {
     return JSON.parse(execSync(`cat ${this.dir}/tmp/protocolParams.json`));
   }
 
+  /**
+   * @returns {JSON}
+   */
   queryTip() {
     return JSON.parse(
       execSync(`${this.cliPath} query tip \
@@ -68,6 +74,7 @@ class CardanoJs {
    * @typedef  stakeAddr
    * @property {string}
    * @param {stakeAddr} address
+   * @returns {JSON}
    */
   queryStakeAddressInfo(address) {
     return JSON.parse(
@@ -83,6 +90,7 @@ class CardanoJs {
    * @typedef paymentAddr
    * @property {string}
    * @param {paymentAddr} address
+   * @returns {JSON}
    */
   queryUtxo(address) {
     let utxosRaw = execSync(`${this.cliPath} query utxo \
