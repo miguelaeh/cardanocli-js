@@ -10,20 +10,20 @@ The <code>priv</code> folder is again divided into two subolders holding on one 
 Example structure:
 
 ```
-dir \
-    tmp \
-        tx_1.raw
+dir
+    tmp
+        <tx_1.raw>
         ...
-    priv \
-        pool \
-            Berry \
-                Berry.node.vkey
-                Berry.node.skey
-                Berry.vrf.vkey
+    priv
+        pool
+            Berry
+                <Berry.node.vkey>
+                <Berry.node.skey>
+                <Berry.vrf.vkey>
                 ...
-        wallet \
-            Lovelace \
-                Lovelace.payment.vkey
-                Lovelace.stake.skey
+        wallet
+            Lovelace
+                <Lovelace.payment.vkey>
+                <Lovelace.stake.skey>
                 ...
 ```

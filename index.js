@@ -13,19 +13,19 @@ const {
 class CardanoJs {
   /**
    *
-   * @param {JSON} options - {shelleyGenesisPath: required, socketPath: optional, cliPath: optional, era:optional, network: optional, dir: optional}
+   * @param {JSON} options - {shelleyGenesisPath: optional, socketPath: optional, cliPath: optional, era:optional, network: optional, dir: optional}
    */
 
   constructor(options) {
     this.network = `--mainnet`;
     this.era = "";
     this.dir = ".";
-    this.cliPath = "cardano-cli"
-    if (!options.shelleyGenesisPath)
-      throw new Error("shelleyGenesisPath required");
-    this.shelleyGenesis = JSON.parse(
-      execSync(`cat ${options.shelleyGenesisPath}`).toString()
-    );
+    this.cliPath = "cardano-cli";
+
+    options.shelleyGenesisPath &&
+      (this.shelleyGenesis = JSON.parse(
+        execSync(`cat ${options.shelleyGenesisPath}`).toString()
+      ));
 
     options.socketPath &&
       execSync(`export CARDANO_NODE_SOCKET_PATH=${options.socketPath}`);
@@ -182,6 +182,10 @@ class CardanoJs {
     return scriptAddr;
   }
 
+  /**
+   *
+   * @param {string} account - Name for the account
+   */
   wallet(account) {
     const paymentAddr = fs
       .readFileSync(
@@ -199,37 +203,40 @@ class CardanoJs {
 
     let reward = this.queryStakeAddressInfo(stakingAddr);
     reward = reward.find((delegation) => delegation.address == stakingAddr)
-      ? /**
-         *
-         * @param {string} account - Name for the account
-         */
-        reward.find((delegation) => delegation.address == stakingAddr)
+      ? reward.find((delegation) => delegation.address == stakingAddr)
           .rewardAccountBalance
       : "Staking key not registered";
 
     return {
-      summary: {
-        paymentAddr,
-        stakingAddr,
-        balance,
-        reward,
-      },
+      name: account,
+      paymentAddr,
+      stakingAddr,
+      balance,
+      reward,
       file: (fileName) => {
-        let content;
         try {
-          content = fs
-            .readFileSync(
-              `${this.dir}/priv/wallet/${account}/${account}.${fileName}`
-            )
-            .toString();
-          return {
-            path: `${this.dir}/priv/wallet/${account}/${account}.${fileName}`,
-            content,
-          };
+          fs.readFileSync(
+            `${this.dir}/priv/wallet/${account}/${account}.${fileName}`
+          );
+          return `${this.dir}/priv/wallet/${account}/${account}.${fileName}`;
         } catch (err) {
           throw new Error(
             `File ${fileName} of Account ${account} doesn't exist`
           );
+        }
+      },
+    };
+  }
+
+  pool(name) {
+    return {
+      name,
+      file: (fileName) => {
+        try {
+          fs.readFileSync(`${this.dir}/priv/pool/${name}/${name}.${fileName}`);
+          return `${this.dir}/priv/pool/${name}/${name}.${fileName}`;
+        } catch (err) {
+          throw new Error(`File ${fileName} of Pool ${name} doesn't exist`);
         }
       },
     };
@@ -270,55 +277,55 @@ class CardanoJs {
 
   /**
    *
-   * @param {string} pool - Pool name
+   * @param {string} poolName - Pool name
    */
-  nodeKeyGenKES(pool) {
-    execSync(`mkdir -p ${this.dir}/priv/pool/${pool}`);
+  nodeKeyGenKES(poolName) {
+    execSync(`mkdir -p ${this.dir}/priv/pool/${poolName}`);
     execSync(`${this.cliPath} node key-gen-KES \
-                        --verification-key-file ${this.dir}/priv/pool/${pool}/${pool}.kes.vkey \
-                        --signing-key-file ${this.dir}/priv/pool/${pool}/${pool}.kes.skey
+                        --verification-key-file ${this.dir}/priv/pool/${poolName}/${poolName}.kes.vkey \
+                        --signing-key-file ${this.dir}/priv/pool/${poolName}/${poolName}.kes.skey
                     `);
   }
 
-  nodeKeyGen(pool) {
-    execSync(`mkdir -p ${this.dir}/priv/pool/${pool}`);
+  nodeKeyGen(poolName) {
+    execSync(`mkdir -p ${this.dir}/priv/pool/${poolName}`);
     execSync(`${this.cliPath} node key-gen \
-                        --cold-verification-key-file ${this.dir}/priv/pool/${pool}/${pool}.node.vkey \
-                        --cold-signing-key-file ${this.dir}/priv/pool/${pool}/${pool}.node.skey \
-                        --operational-certificate-issue-counter ${this.dir}/priv/pool/${pool}/${pool}.node.counter 
+                        --cold-verification-key-file ${this.dir}/priv/pool/${poolName}/${poolName}.node.vkey \
+                        --cold-signing-key-file ${this.dir}/priv/pool/${poolName}/${poolName}.node.skey \
+                        --operational-certificate-issue-counter ${this.dir}/priv/pool/${poolName}/${poolName}.node.counter 
                     `);
   }
 
-  nodeIssueOpCert(pool) {
+  nodeIssueOpCert(poolName) {
     execSync(`${this.cliPath} node issue-op-cert \
                         --kes-verification-key-file ${
                           this.dir
-                        }/priv/pool/${pool}/${pool}.kes.vkey \
+                        }/priv/pool/${poolName}/${poolName}.kes.vkey \
                         --cold-signing-key-file ${
                           this.dir
-                        }/priv/pool/${pool}/${pool}.node.skey \
+                        }/priv/pool/${poolName}/${poolName}.node.skey \
                         --operational-certificate-issue-counter ${
                           this.dir
-                        }/priv/pool/${pool}/${pool}.node.counter \
+                        }/priv/pool/${poolName}/${poolName}.node.counter \
                         --kes-period ${this.KESPeriod()} \
                         --out-file ${
                           this.dir
-                        }/priv/pool/${pool}/${pool}.node.cert 
+                        }/priv/pool/${poolName}/${poolName}.node.cert 
                     `);
-    return `${this.dir}/priv/pool/${pool}/${pool}.node.cert`;
+    return `${this.dir}/priv/pool/${poolName}/${poolName}.node.cert`;
   }
 
-  nodeKeyGenVRF(pool) {
-    execSync(`mkdir -p ${this.dir}/priv/pool/${pool}`);
+  nodeKeyGenVRF(poolName) {
+    execSync(`mkdir -p ${this.dir}/priv/pool/${poolName}`);
     execSync(`${this.cliPath} node key-gen-VRF \
-                        --verification-key-file ${this.dir}/priv/pool/${pool}/${pool}.vrf.vkey \
-                        --signing-key-file ${this.dir}/priv/pool/${pool}/${pool}.vrf.skey
+                        --verification-key-file ${this.dir}/priv/pool/${poolName}/${poolName}.vrf.vkey \
+                        --signing-key-file ${this.dir}/priv/pool/${poolName}/${poolName}.vrf.skey
                     `);
   }
 
-  stakePoolId(pool) {
+  stakePoolId(poolName) {
     return execSync(
-      `${this.cliPath} stake-pool id --cold-verification-key-file ${this.dir}/priv/pool/${pool}/${pool}.node.vkey`
+      `${this.cliPath} stake-pool id --cold-verification-key-file ${this.dir}/priv/pool/${poolName}/${poolName}.node.vkey`
     )
       .toString()
       .replace(/\s+/g, " ");
@@ -341,10 +348,10 @@ class CardanoJs {
 
   /**
    *
-   * @param {string} pool | Pool name
+   * @param {string} poolName | Pool name
    * @param {JSON} options | {pledge: Int, cost: Int, margin: Float, url: String, metaHash: String, rewardAccount: String, owners: Array, relays: Array}
    */
-  stakePoolRegistrationCertificate(pool, options) {
+  stakePoolRegistrationCertificate(poolName, options) {
     if (
       !(
         options &&
@@ -363,8 +370,8 @@ class CardanoJs {
     let relays = relayToString(options.relays);
 
     execSync(`${this.cliPath} stake-pool registration-certificate \
-                --cold-verification-key-file ${this.dir}/priv/pool/${pool}/${pool}.node.vkey \
-                --vrf-verification-key-file ${this.dir}/priv/pool/${pool}/${pool}.vrf.vkey \
+                --cold-verification-key-file ${this.dir}/priv/pool/${poolName}/${poolName}.node.vkey \
+                --vrf-verification-key-file ${this.dir}/priv/pool/${poolName}/${poolName}.vrf.vkey \
                 --pool-pledge ${options.pledge} \
                 --pool-cost ${options.cost} \
                 --pool-margin ${options.margin} \
@@ -374,28 +381,28 @@ class CardanoJs {
                 ${this.network} \
                 --metadata-url ${options.url} \
                 --metadata-hash ${options.metaHash} \
-                --out-file ${this.dir}/priv/pool/${pool}/${pool}.pool.cert
+                --out-file ${this.dir}/priv/pool/${poolName}/${poolName}.pool.cert
             `);
-    return `${this.dir}/priv/pool/${pool}/${pool}.pool.cert`;
+    return `${this.dir}/priv/pool/${poolName}/${poolName}.pool.cert`;
   }
 
   /**
    *
-   * @param {string} pool | Pool name
+   * @param {string} poolName | Pool name
    * @param {number} epoch | Retirement Epoch
    */
-  stakePoolDeregistrationCertificate(pool, epoch) {
+  stakePoolDeregistrationCertificate(poolName, epoch) {
     execSync(`${this.cliPath} stake-pool deregistration-certificate \
-                --cold-verification-key-file ${this.dir}/priv/pool/${pool}/${pool}.node.vkey \
+                --cold-verification-key-file ${this.dir}/priv/pool/${poolName}/${poolName}.node.vkey \
                 --epoch ${epoch}
-                --out-file ${this.dir}/priv/pool/${pool}/${pool}.pool.dereg
+                --out-file ${this.dir}/priv/pool/${poolName}/${poolName}.pool.dereg
               `);
-    return `${this.dir}/priv/pool/${pool}/${pool}.pool.dereg`;
+    return `${this.dir}/priv/pool/${poolName}/${poolName}.pool.dereg`;
   }
 
   transactionBuildRaw(options) {
-    if (!(options && options.txIn && options.txOut && options.witnessCount))
-      throw new Error("TxIn, TxOut and WitnessCount required");
+    if (!(options && options.txIn && options.txOut))
+      throw new Error("TxIn and TxOut required");
     let UID = Math.random().toString(36).substr(2, 9);
     let certs = options.certs ? certToString(options.certs) : "";
     let withdrawal = options.withdrawal
@@ -411,15 +418,19 @@ class CardanoJs {
                 ${certs} \
                 ${withdrawal} \
                 --invalid-hereafter ${this.queryTip().slotNo + 10000} \
-                --fee 0 \
-                --out-file ${this.dir}/tmp/tx.tmp \
+                --fee ${options.fee ? options.fee : 0} \
+                --out-file ${this.dir}/tmp/tx_${UID}.raw \
                 ${this.era}`);
 
-    let fee = parseInt(
+    return `${this.dir}/tmp/tx_${UID}.raw`;
+  }
+
+  transactionCalculateMinFee(options) {
+    return parseInt(
       execSync(`${this.cliPath} transaction calculate-min-fee \
-                --tx-body-file ${this.dir}/tmp/tx.tmp \
-                --tx-in-count ${txIn.length} \
-                --tx-out-count ${txOut.length} \
+                --tx-body-file ${options.txBody} \
+                --tx-in-count ${options.txIn.length} \
+                --tx-out-count ${options.txOut.length} \
                 --mainnet \
                 --witness-count ${options.witnessCount} \
                 --protocol-params-file ${this.protcolParametersPath}`)
@@ -427,20 +438,6 @@ class CardanoJs {
         .replace(/\s+/g, " ")
         .split(" ")[0]
     );
-
-    txIn[0].amount -= fee;
-    txInString = txInToString(txIn);
-    execSync(`${this.cliPath} transaction build-raw \
-                ${txInString} \
-                ${txOutString} \
-                ${certs} \
-                ${withdrawal} \
-                --invalid-hereafter ${this.queryTip().slotNo + 10000} \
-                --fee ${fee} \
-                --out-file ${this.dir}/tmp/tx_${UID}.raw \
-                ${this.era}`);
-
-    return `${this.dir}/tmp/tx_${UID}.raw`;
   }
 
   transactionSign(options) {
@@ -482,7 +479,28 @@ class CardanoJs {
     return `${this.dir}/tmp/tx_${UID}.signed`;
   }
 
+  transactionSubmit(tx) {
+    execSync(
+      `${this.cliPath} transaction submit ${this.network} --tx-file ${tx}`
+    );
+    return this.transactionTxid({ txFile: tx });
+  }
+
+  /**
+   *
+   * @param {JSON} options {txBody: String, txFile: String}
+   */
+  transactionTxid(options) {
+    let txArg = options.txBody
+      ? `--tx-body-file ${options.txBody}`
+      : `--tx-file ${options.txFile}`;
+    return execSync(`${this.cliPath} transaction txid ${txArg}`)
+      .toString()
+      .replace(/\s+/g, " ");
+  }
+
   KESPeriod() {
+    if (!this.shelleyGenesis) throw new Error("shelleyGenesisPath required");
     return parseInt(
       this.queryTip().slotNo / this.shelleyGenesis.slotsPerKESPeriod
     );
