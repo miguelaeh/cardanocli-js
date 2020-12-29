@@ -53,7 +53,7 @@ Check /examples for more use cases.
 ## Classes
 
 <dl>
-<dt><a href="#CardanoJs">CardanoJs</a></dt>
+<dt><a href="#CardanoJsClass">CardanoJs</a></dt>
 <dd></dd>
 </dl>
 
@@ -72,7 +72,7 @@ Check /examples for more use cases.
 
 <a name="CardanoJs"></a>
 
-## CardanoJs
+## <span id="CardanoJsClass">CardanoJs</span>
 
 **Kind**: global class
 
