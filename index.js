@@ -10,6 +10,26 @@ const {
   witnessFilesToString,
 } = require("./helper");
 
+/**
+ * @typedef lovelace
+ * @property {number}
+ */
+
+/**
+ * @typedef path
+ * @property {string}
+ */
+
+/**
+ * @typedef paymentAddr
+ * @property {string}
+ */
+
+/**
+ * @typedef stakeAddr
+ * @property {string}
+ */
+
 class CardanoJs {
   /**
    *
@@ -46,7 +66,7 @@ class CardanoJs {
   }
 
   /**
-   * @returns {JSON}
+   * @returns {object}
    */
   queryProtcolParameters() {
     execSync(`${this.cliPath} query protocol-parameters \
@@ -60,7 +80,7 @@ class CardanoJs {
   }
 
   /**
-   * @returns {JSON}
+   * @returns {object}
    */
   queryTip() {
     return JSON.parse(
@@ -72,10 +92,8 @@ class CardanoJs {
   }
 
   /**
-   * @typedef  stakeAddr
-   * @property {string}
    * @param {stakeAddr} address
-   * @returns {JSON}
+   * @returns {object}
    */
   queryStakeAddressInfo(address) {
     return JSON.parse(
@@ -88,10 +106,8 @@ class CardanoJs {
   }
 
   /**
-   * @typedef paymentAddr
-   * @property {string}
    * @param {paymentAddr} address
-   * @returns {JSON}
+   * @returns {object}
    */
   queryUtxo(address) {
     let utxosRaw = execSync(`${this.cliPath} query utxo \
@@ -144,6 +160,7 @@ class CardanoJs {
   /**
    *
    * @param {string} account - Name of account
+   * @returns {path}
    */
   stakeAddressBuild(account) {
     execSync(`${this.cliPath} stake-address build \
@@ -195,7 +212,8 @@ class CardanoJs {
 
   /**
    *
-   * @param {JSON} script
+   * @param {object} script
+   * @returns {paymentAddr}
    */
   addressBuildScript(script) {
     let UID = Math.random().toString(36).substr(2, 9);
@@ -214,6 +232,7 @@ class CardanoJs {
   /**
    *
    * @param {string} account - Name of the account
+   * @returns {object}
    */
   wallet(account) {
     const paymentAddr = fs
@@ -260,6 +279,7 @@ class CardanoJs {
   /**
    *
    * @param {string} poolName - Name of the pool
+   * @returns {object}
    */
   pool(poolName) {
     return {
@@ -319,6 +339,7 @@ class CardanoJs {
   /**
    *
    * @param {string} account - Name of the account
+   * @returns {string}
    */
   stakeAddressKeyHash(account) {
     return execSync(`${this.cliPath} stake-address key-hash \
@@ -392,6 +413,7 @@ class CardanoJs {
   /**
    *
    * @param {string} poolName - Name of the pool
+   * @returns {string}
    */
   stakePoolId(poolName) {
     return execSync(
@@ -404,6 +426,7 @@ class CardanoJs {
   /**
    *
    * @param {string} metadata - Raw File
+   * @returns {string}
    */
   stakePoolMetadataHash(metadata) {
     fs.writeFileSync(`${this.dir}/tmp/poolmeta.json`, metadata);
@@ -417,12 +440,7 @@ class CardanoJs {
   }
 
   /**
-   * @typedef lovelace
-   * @property {number}
-   *
-   * @typedef path
-   * @property {string}
-   *
+   * @param {string} poolName | Name of the pool
    * @param {Object} options
    * @param {lovelace} options.pledge
    * @param {number} options.margin
@@ -432,9 +450,6 @@ class CardanoJs {
    * @param {path} options.rewardAccount
    * @param {Array<path>} options.owners
    * @param {Array<Object>} options.relays
-   *
-   *
-   * @param {string} poolName | Name of the pool
    * @returns {path}
    */
   stakePoolRegistrationCertificate(poolName, options) {
@@ -490,9 +505,9 @@ class CardanoJs {
   /**
    *
    * @param {Object} options
-   * @param {JSON} options.txIn
-   * @param {JSON} options.txOut
-   * @param {JSON=} options.withdrawal
+   * @param {object} options.txIn
+   * @param {object} options.txOut
+   * @param {object=} options.withdrawal
    * @param {Array<path>=} options.certs
    * @param {lovelace=} options.fee
    * @returns {path}
@@ -524,8 +539,8 @@ class CardanoJs {
    *
    * @param {Object} options
    * @param {path} options.txBody
-   * @param {JSON} options.txIn
-   * @param {JSON} options.txOut
+   * @param {object} options.txIn
+   * @param {object} options.txOut
    * @param {number} options.witnessCount
    * @returns {lovelace}
    */
@@ -549,7 +564,7 @@ class CardanoJs {
    *
    * @param {Object} options
    * @param {Array<path>} options.signingKeys - One ore more signing keys
-   * @param {JSON=} options.scriptFile
+   * @param {object=} options.scriptFile
    * @param {path} options.txBody
    * @returns {path}
    */
@@ -579,7 +594,7 @@ class CardanoJs {
    * @param {Object} options
    * @param {path} options.txBody
    * @param {path} options.signingKey
-   * @param {JSON=} options.scriptFile
+   * @param {object=} options.scriptFile
    * @returns {path}
    */
   transactionWitness(options) {
@@ -621,9 +636,7 @@ class CardanoJs {
 
   /**
    *
-   *
    * @param {path} tx - Path to signed transaction file
-   *
    * @returns {string} - Transaction hash
    */
   transactionSubmit(tx) {
@@ -649,6 +662,9 @@ class CardanoJs {
       .replace(/\s+/g, " ");
   }
 
+  /**
+   * @returns {number}
+   */
   KESPeriod() {
     if (!this.shelleyGenesis) throw new Error("shelleyGenesisPath required");
     return parseInt(
@@ -656,10 +672,20 @@ class CardanoJs {
     );
   }
 
+  /**
+   *
+   * @param {number} ada
+   * @returns {lovelace}
+   */
   toLovelace(ada) {
     return ada * 1000000;
   }
 
+  /**
+   *
+   * @param {lovelace} lovelace
+   * @returns {number}
+   */
   toAda(lovelace) {
     return lovelace / 1000000;
   }

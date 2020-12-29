@@ -3,8 +3,12 @@ const os = require("os");
 const path = require("path");
 const fetch = require("sync-fetch");
 
-const dir = path.join(os.homedir());
-const shelleyPath = os.homedir();
+const dir = path.join(os.homedir(), "testnet");
+const shelleyPath = path.join(
+  os.homedir(),
+  "testnet",
+  "testnet-shelley-genesis.json"
+);
 
 const cardanoJs = new CardanoJs({
   era: "allegra",
