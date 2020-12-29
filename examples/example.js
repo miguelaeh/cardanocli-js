@@ -3,12 +3,16 @@ const os = require("os");
 const path = require("path");
 
 const dir = path.join(os.homedir(), "testnet");
-const shelleyPath = path.join(os.homedir(), "testnet", "testnet-shelley-genesis.json");
+const shelleyPath = path.join(
+  os.homedir(),
+  "testnet",
+  "testnet-shelley-genesis.json"
+);
 
 const cardanoJs = new CardanoJs({
   era: "allegra",
-  network:"testnet-magic 1097911063",
-  dir:dir,
+  network: "testnet-magic 1097911063",
+  dir: dir,
   shelleyGenesisPath: shelleyPath,
 });
 
@@ -35,7 +39,7 @@ console.log(cardanoJs.queryTip());
 // createWallet("Wow");
 
 //read out wallet info
-// console.log(cardanoJs.wallet("Wow").summary);
+// console.log(cardanoJs.wallet("Wow"));
 //read out wallet file content
 // console.log(cardanoJs.wallet("Wow").file("payment.skey"));
 
@@ -60,7 +64,7 @@ console.log(cardanoJs.queryTip());
 //   cardanoJs.stakePoolId("Cool")
 // );
 
-// console.log(cardanoJs.wallet("Wow").summary.stakingAddr);
+// console.log(cardanoJs.wallet("Wow").stakingAddr);
 
 // cardanoJs.stakeAddressDeregistrationCertificate("Wow");
 
@@ -69,7 +73,7 @@ console.log(cardanoJs.queryTip());
 
 // console.log(cardanoJs.addressKeyHash("Wow"));
 
-// console.log(cardanoJs.addressInfo(cardanoJs.wallet("Wow").summary.paymentAddr));
+// console.log(cardanoJs.addressInfo(cardanoJs.wallet("Wow").paymentAddr));
 
 // let script = {
 //   scripts: [
@@ -104,10 +108,10 @@ console.log(cardanoJs.queryTip());
 //   pledge: cardanoJs.toLovelace(1000),
 //   margin: 0.05,
 //   cost: cardanoJs.toLovelace(340),
-//   rewardAccount: cardanoJs.wallet("Wow").file("stake.vkey").path,
+//   rewardAccount: cardanoJs.wallet("Wow").file("stake.vkey"),
 //   url: "https://pool.io",
 //   metaHash: cardanoJs.stakePoolMetadataHash(meta),
-//   owners: [cardanoJs.wallet("Wow").file("stake.vkey").path],
+//   owners: [cardanoJs.wallet("Wow").file("stake.vkey")],
 //   relays: [
 //     { host: "node.relay.io", port: 3001 },
 //     { ip: "79.248.97.37", port: 3005 },
@@ -127,9 +131,9 @@ console.log(cardanoJs.queryTip());
 //     },
 //   ],
 //   witnessCount: 3,
-//   certs: [cardanoJs.wallet("Wow").file("deleg.cert").path],
+//   certs: [cardanoJs.wallet("Wow").file("deleg.cert")],
 //   withdrawal: {
-//     stakingAddress: cardanoJs.wallet("Wow").summary.stakingAddr,
+//     stakingAddress: cardanoJs.wallet("Wow").stakingAddr,
 //     reward: 0,
 //   },
 // };
@@ -139,13 +143,13 @@ console.log(cardanoJs.queryTip());
 // //witness0
 // let txWitness = cardanoJs.transactionWitness({
 //   txBody: txBody,
-//   signingKey: cardanoJs.wallet("Wow").file("payment.skey").path,
+//   signingKey: cardanoJs.wallet("Wow").file("payment.skey"),
 // });
 
 // //witness1
 // let txWitness1 = cardanoJs.transactionWitness({
 //   txBody: txBody,
-//   signingKey: cardanoJs.wallet("Wow").file("payment.skey").path,
+//   signingKey: cardanoJs.wallet("Wow").file("payment.skey"),
 // });
 
 // let txSigned = cardanoJs.transactionAssemble({

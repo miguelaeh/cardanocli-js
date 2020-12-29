@@ -24,33 +24,42 @@ const createWallet = (accout) => {
   return cardanoJs.wallet(accout);
 };
 
-const registerWallet = (account) => {
+const registerWallet = (wallet) => {
+  let account = wallet.name;
   let keyDeposit = cardanoJs.queryProtcolParameters().keyDeposit;
   let stakeCert = cardanoJs.stakeAddressRegistrationCertificate(account);
-  let paymentAddress = cardanoJs.wallet(account).summary.paymentAddr;
-  let balance = cardanoJs.wallet(account).summary.balance;
+  let paymentAddress = cardanoJs.wallet(account).paymentAddr;
+  let balance = cardanoJs.wallet(account).balance;
   let tx = {
     txIn: cardanoJs.queryUtxo(paymentAddress),
     txOut: [{ address: paymentAddress, amount: balance - keyDeposit }],
     certs: [stakeCert],
     witnessCount: 2,
   };
-  let txBody = cardanoJs.transactionBuildRaw(tx);
+  let txBodyRaw = cardanoJs.transactionBuildRaw(tx);
+  let fee = cardanoJs.transactionCalculateMinFee({
+    ...tx,
+    txBody: txBodyRaw,
+  });
+  tx.txOut[0].amount -= fee;
+  let txBody = cardanoJs.transactionBuildRaw({ ...tx, fee });
   let txSigned = cardanoJs.transactionSign({
     txBody,
     signingKeys: [
-      cardanoJs.wallet(account).file("payment.skey").path,
-      cardanoJs.wallet(account).file("stake.skey").path,
+      cardanoJs.wallet(account).file("payment.skey"),
+      cardanoJs.wallet(account).file("stake.skey"),
     ],
   });
 
   return txSigned;
 };
 
-let wallet = cardanoJs.wallet("Ales");
+let wallet = createWallet("Test");
 
 console.log(wallet);
 
-// let tx = registerWallet("Ales");
+let tx = registerWallet(wallet);
 
-// cardanoJs.transactionSubmit(tx);
+let txHash = cardanoJs.transactionSubmit(tx);
+
+console.log("TxHash: " + txHash);
