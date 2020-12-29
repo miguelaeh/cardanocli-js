@@ -23,25 +23,26 @@ class CardanoJs {
    */
 
   constructor(options) {
-    this.network = `--mainnet`;
+    this.network = "mainnet";
     this.era = "";
     this.dir = ".";
     this.cliPath = "cardano-cli";
 
-    options.shelleyGenesisPath &&
-      (this.shelleyGenesis = JSON.parse(
-        execSync(`cat ${options.shelleyGenesisPath}`).toString()
-      ));
+    if (options) {
+      options.shelleyGenesisPath &&
+        (this.shelleyGenesis = JSON.parse(
+          execSync(`cat ${options.shelleyGenesisPath}`).toString()
+        ));
 
-    options.socketPath &&
-      execSync(`export CARDANO_NODE_SOCKET_PATH=${options.socketPath}`);
-    options.era && (this.era = "--" + options.era + "-era");
-    options.network && (this.network = "--" + options.network);
-    options.dir && (this.dir = options.dir);
-    options.cliPath && (this.cliPath = options.cliPath);
+      options.socketPath &&
+        (process.env["CARDANO_NODE_SOCKET_PATH"] = options.socketPath);
+      options.era && (this.era = "--" + options.era + "-era");
+      options.network && (this.network = options.network);
+      options.dir && (this.dir = options.dir);
+      options.cliPath && (this.cliPath = options.cliPath);
+    }
 
     execSync(`mkdir -p ${this.dir}/tmp`);
-    this.queryProtcolParameters();
   }
 
   /**
@@ -49,7 +50,7 @@ class CardanoJs {
    */
   queryProtcolParameters() {
     execSync(`${this.cliPath} query protocol-parameters \
-                            ${this.network} \
+                            --${this.network} \
                             --cardano-mode \
                             --out-file ${this.dir}/tmp/protocolParams.json \
                             ${this.era}
@@ -64,7 +65,7 @@ class CardanoJs {
   queryTip() {
     return JSON.parse(
       execSync(`${this.cliPath} query tip \
-        ${this.network} \
+        --${this.network} \
         --cardano-mode
                         `).toString()
     );
@@ -79,7 +80,7 @@ class CardanoJs {
   queryStakeAddressInfo(address) {
     return JSON.parse(
       execSync(`${this.cliPath} query stake-address-info \
-        ${this.network} \
+        --${this.network} \
         --address ${address} \
         ${this.era}
         `).toString()
@@ -94,7 +95,7 @@ class CardanoJs {
    */
   queryUtxo(address) {
     let utxosRaw = execSync(`${this.cliPath} query utxo \
-            ${this.network} \
+            --${this.network} \
             --address ${address} \
             --cardano-mode \
             ${this.era}
@@ -148,7 +149,7 @@ class CardanoJs {
     execSync(`${this.cliPath} stake-address build \
                         --staking-verification-key-file ${this.dir}/priv/wallet/${account}/${account}.stake.vkey \
                         --out-file ${this.dir}/priv/wallet/${account}/${account}.stake.addr \
-                        ${this.network}
+                        --${this.network}
                     `);
     return `${this.dir}/priv/wallet/${account}/${account}.stake.addr`;
   }
@@ -163,7 +164,7 @@ class CardanoJs {
                     --payment-verification-key-file ${this.dir}/priv/wallet/${account}/${account}.payment.vkey \
                     --staking-verification-key-file ${this.dir}/priv/wallet/${account}/${account}.stake.vkey \
                     --out-file ${this.dir}/priv/wallet/${account}/${account}.payment.addr \
-                    ${this.network}
+                    --${this.network}
                 `);
     return `${this.dir}/priv/wallet/${account}/${account}.payment.addr`;
   }
@@ -203,7 +204,7 @@ class CardanoJs {
       JSON.stringify(script)
     );
     let scriptAddr = execSync(
-      `${this.cliPath} address build-script --script-file ${this.dir}/tmp/script_${UID}.json ${this.network}`
+      `${this.cliPath} address build-script --script-file ${this.dir}/tmp/script_${UID}.json --${this.network}`
     )
       .toString()
       .replace(/\s+/g, " ");
@@ -402,7 +403,7 @@ class CardanoJs {
 
   /**
    *
-   * @param {string} metadata | Original File
+   * @param {string} metadata - Raw File
    */
   stakePoolMetadataHash(metadata) {
     fs.writeFileSync(`${this.dir}/tmp/poolmeta.json`, metadata);
@@ -463,7 +464,7 @@ class CardanoJs {
                 --pool-reward-account-verification-key-file ${options.rewardAccount} \
                 ${owners} \
                 ${relays} \
-                ${this.network} \
+                --${this.network} \
                 --metadata-url ${options.url} \
                 --metadata-hash ${options.metaHash} \
                 --out-file ${this.dir}/priv/pool/${poolName}/${poolName}.pool.cert
@@ -492,7 +493,7 @@ class CardanoJs {
    * @param {JSON} options.txIn
    * @param {JSON} options.txOut
    * @param {JSON=} options.withdrawal
-   * @param {Array=} options.certs
+   * @param {Array<path>=} options.certs
    * @param {lovelace=} options.fee
    * @returns {path}
    */
@@ -529,6 +530,7 @@ class CardanoJs {
    * @returns {lovelace}
    */
   transactionCalculateMinFee(options) {
+    this.queryProtcolParameters();
     return parseInt(
       execSync(`${this.cliPath} transaction calculate-min-fee \
                 --tx-body-file ${options.txBody} \
@@ -566,7 +568,7 @@ class CardanoJs {
     execSync(`${this.cliPath} transaction sign \
         --tx-body-file ${options.txBody} \
         ${scriptFile} \
-        ${this.network} \
+        --${this.network} \
         ${signingKeys} \
         --out-file ${this.dir}/tmp/tx_${UID}.signed`);
     return `${this.dir}/tmp/tx_${UID}.signed`;
@@ -594,7 +596,7 @@ class CardanoJs {
     execSync(`${this.cliPath} transaction witness \
         --tx-body-file ${options.txBody} \
         ${scriptFile} \
-        ${this.network} \
+        --${this.network} \
         --signing-key-file ${options.signingKey} \
         --out-file ${this.dir}/tmp/tx_${UID}.witness`);
     return `${this.dir}/tmp/tx_${UID}.witness`;
@@ -626,7 +628,7 @@ class CardanoJs {
    */
   transactionSubmit(tx) {
     execSync(
-      `${this.cliPath} transaction submit ${this.network} --tx-file ${tx}`
+      `${this.cliPath} transaction submit --${this.network} --tx-file ${tx}`
     );
     return this.transactionTxid({ txFile: tx });
   }
