@@ -13,7 +13,13 @@ const {
 class CardanoJs {
   /**
    *
-   * @param {JSON} options - {shelleyGenesisPath: optional, socketPath: optional, cliPath: optional, era:optional, network: optional, dir: optional}
+   * @param {Object} options
+   * @param {path=} options.shelleyGenesisPath
+   * @param {path=} options.socketPath
+   * @param {path=} options.cliPath
+   * @param {path=} options.dir
+   * @param {string=} options.era
+   * @param {string=} options.network
    */
 
   constructor(options) {
@@ -59,8 +65,9 @@ class CardanoJs {
   }
 
   /**
-   *
-   * @param {string} address - Staking address
+   * @typedef  stakeAddr
+   * @property {string}
+   * @param {stakeAddr} address
    */
   queryStakeAddressInfo(address) {
     return JSON.parse(
@@ -73,8 +80,9 @@ class CardanoJs {
   }
 
   /**
-   *
-   * @param {string} address - Payment address
+   * @typedef paymentAddr
+   * @property {string}
+   * @param {paymentAddr} address
    */
   queryUtxo(address) {
     let utxosRaw = execSync(`${this.cliPath} query utxo \
@@ -102,7 +110,7 @@ class CardanoJs {
 
   /**
    *
-   * @param {string} account - Name for the payment account keys
+   * @param {string} account - Name of account
    */
   addressKeyGen(account) {
     execSync(`mkdir -p ${this.dir}/priv/wallet/${account}`);
@@ -114,7 +122,7 @@ class CardanoJs {
 
   /**
    *
-   * @param {string} account - Name for the stake account keys
+   * @param {string} account - Name of account
    */
   stakeAddressKeyGen(account) {
     execSync(`mkdir -p ${this.dir}/priv/wallet/${account}`);
@@ -126,7 +134,7 @@ class CardanoJs {
 
   /**
    *
-   * @param {string} account - Name for the account
+   * @param {string} account - Name of account
    */
   stakeAddressBuild(account) {
     execSync(`${this.cliPath} stake-address build \
@@ -139,7 +147,8 @@ class CardanoJs {
 
   /**
    *
-   * @param {string} account - Name for the account
+   * @param {string} account - Name of account
+   * @returns {path} - Path to the payment address
    */
   addressBuild(account) {
     execSync(`${this.cliPath} address build \
@@ -151,6 +160,10 @@ class CardanoJs {
     return `${this.dir}/priv/wallet/${account}/${account}.payment.addr`;
   }
 
+  /**
+   *
+   * @param {string} account - Name of account
+   */
   addressKeyHash(account) {
     return execSync(`${this.cliPath} address key-hash \
                         --payment-verification-key-file ${this.dir}/priv/wallet/${account}/${account}.payment.vkey \
@@ -159,6 +172,10 @@ class CardanoJs {
       .replace(/\s+/g, " ");
   }
 
+  /**
+   *
+   * @param {paymentAddr} address
+   */
   addressInfo(address) {
     return execSync(`${this.cliPath} address info \
             --address ${address} \
@@ -172,19 +189,22 @@ class CardanoJs {
    * @param {JSON} script
    */
   addressBuildScript(script) {
-    fs.writeFileSync(`${this.dir}/tmp/script.json`, JSON.stringify(script));
+    let UID = Math.random().toString(36).substr(2, 9);
+    fs.writeFileSync(
+      `${this.dir}/tmp/script_${UID}.json`,
+      JSON.stringify(script)
+    );
     let scriptAddr = execSync(
-      `${this.cliPath} address build-script --script-file ${this.dir}/tmp/script.json ${this.network}`
+      `${this.cliPath} address build-script --script-file ${this.dir}/tmp/script_${UID}.json ${this.network}`
     )
       .toString()
       .replace(/\s+/g, " ");
-    execSync(`rm ${this.dir}/tmp/script.json`);
     return scriptAddr;
   }
 
   /**
    *
-   * @param {string} account - Name for the account
+   * @param {string} account - Name of the account
    */
   wallet(account) {
     const paymentAddr = fs
@@ -228,9 +248,13 @@ class CardanoJs {
     };
   }
 
-  pool(name) {
+  /**
+   *
+   * @param {string} poolName - Name of the pool
+   */
+  pool(poolName) {
     return {
-      name,
+      name: poolName,
       file: (fileName) => {
         try {
           fs.readFileSync(`${this.dir}/priv/pool/${name}/${name}.${fileName}`);
@@ -242,6 +266,11 @@ class CardanoJs {
     };
   }
 
+  /**
+   *
+   * @param {string} account - Name of the account
+   * @returns {path}
+   */
   stakeAddressRegistrationCertificate(account) {
     execSync(`${this.cliPath} stake-address registration-certificate \
                         --staking-verification-key-file ${this.dir}/priv/wallet/${account}/${account}.stake.vkey \
@@ -250,6 +279,11 @@ class CardanoJs {
     return `${this.dir}/priv/wallet/${account}/${account}.stake.cert`;
   }
 
+  /**
+   *
+   * @param {string} account - Name of the account
+   * @returns {path}
+   */
   stakeAddressDeregistrationCertificate(account) {
     execSync(`${this.cliPath} stake-address deregistration-certificate \
                         --staking-verification-key-file ${this.dir}/priv/wallet/${account}/${account}.stake.vkey \
@@ -258,6 +292,12 @@ class CardanoJs {
     return `${this.dir}/priv/wallet/${account}/${account}.stake.cert`;
   }
 
+  /**
+   *
+   * @param {string} account - Name of the account
+   * @param {string} poolId - Stake pool verification key (Bech32 or hex-encoded)
+   * @returns {path}
+   */
   stakeAddressDelegationCertificate(account, poolId) {
     execSync(`${this.cliPath} stake-address delegation-certificate \
                         --staking-verification-key-file ${this.dir}/priv/wallet/${account}/${account}.stake.vkey \
@@ -267,6 +307,10 @@ class CardanoJs {
     return `${this.dir}/priv/wallet/${account}/${account}.deleg.cert`;
   }
 
+  /**
+   *
+   * @param {string} account - Name of the account
+   */
   stakeAddressKeyHash(account) {
     return execSync(`${this.cliPath} stake-address key-hash \
                         --staking-verification-key-file ${this.dir}/priv/wallet/${account}/${account}.stake.vkey \
@@ -277,7 +321,7 @@ class CardanoJs {
 
   /**
    *
-   * @param {string} poolName - Pool name
+   * @param {string} poolName - Name of the pool
    */
   nodeKeyGenKES(poolName) {
     execSync(`mkdir -p ${this.dir}/priv/pool/${poolName}`);
@@ -287,6 +331,10 @@ class CardanoJs {
                     `);
   }
 
+  /**
+   *
+   * @param {string} poolName - Name of the pool
+   */
   nodeKeyGen(poolName) {
     execSync(`mkdir -p ${this.dir}/priv/pool/${poolName}`);
     execSync(`${this.cliPath} node key-gen \
@@ -296,6 +344,11 @@ class CardanoJs {
                     `);
   }
 
+  /**
+   *
+   * @param {string} poolName - Name of the pool
+   * @returns {path}
+   */
   nodeIssueOpCert(poolName) {
     execSync(`${this.cliPath} node issue-op-cert \
                         --kes-verification-key-file ${
@@ -315,6 +368,10 @@ class CardanoJs {
     return `${this.dir}/priv/pool/${poolName}/${poolName}.node.cert`;
   }
 
+  /**
+   *
+   * @param {string} poolName - Name of the pool
+   */
   nodeKeyGenVRF(poolName) {
     execSync(`mkdir -p ${this.dir}/priv/pool/${poolName}`);
     execSync(`${this.cliPath} node key-gen-VRF \
@@ -323,6 +380,10 @@ class CardanoJs {
                     `);
   }
 
+  /**
+   *
+   * @param {string} poolName - Name of the pool
+   */
   stakePoolId(poolName) {
     return execSync(
       `${this.cliPath} stake-pool id --cold-verification-key-file ${this.dir}/priv/pool/${poolName}/${poolName}.node.vkey`
@@ -333,7 +394,7 @@ class CardanoJs {
 
   /**
    *
-   * @param {string} metadata | original file content
+   * @param {string} metadata | Original File
    */
   stakePoolMetadataHash(metadata) {
     fs.writeFileSync(`${this.dir}/tmp/poolmeta.json`, metadata);
@@ -347,9 +408,25 @@ class CardanoJs {
   }
 
   /**
+   * @typedef lovelace
+   * @property {number}
    *
-   * @param {string} poolName | Pool name
-   * @param {JSON} options | {pledge: Int, cost: Int, margin: Float, url: String, metaHash: String, rewardAccount: String, owners: Array, relays: Array}
+   * @typedef path
+   * @property {string}
+   *
+   * @param {Object} options
+   * @param {lovelace} options.pledge
+   * @param {number} options.margin
+   * @param {lovelace} options.cost
+   * @param {string} options.url
+   * @param {string} options.metaHash
+   * @param {path} options.rewardAccount
+   * @param {Array<path>} options.owners
+   * @param {Array<Object>} options.relays
+   *
+   *
+   * @param {string} poolName | Name of the pool
+   * @returns {path}
    */
   stakePoolRegistrationCertificate(poolName, options) {
     if (
@@ -388,8 +465,9 @@ class CardanoJs {
 
   /**
    *
-   * @param {string} poolName | Pool name
+   * @param {string} poolName |Name of the pool
    * @param {number} epoch | Retirement Epoch
+   * @returns {path}
    */
   stakePoolDeregistrationCertificate(poolName, epoch) {
     execSync(`${this.cliPath} stake-pool deregistration-certificate \
@@ -400,6 +478,16 @@ class CardanoJs {
     return `${this.dir}/priv/pool/${poolName}/${poolName}.pool.dereg`;
   }
 
+  /**
+   *
+   * @param {Object} options
+   * @param {JSON} options.txIn
+   * @param {JSON} options.txOut
+   * @param {JSON=} options.withdrawal
+   * @param {Array=} options.certs
+   * @param {lovelace=} options.fee
+   * @returns {path}
+   */
   transactionBuildRaw(options) {
     if (!(options && options.txIn && options.txOut))
       throw new Error("TxIn and TxOut required");
@@ -408,10 +496,8 @@ class CardanoJs {
     let withdrawal = options.withdrawal
       ? `--withdrawal ${options.withdrawal.stakingAddress}+${options.withdrawal.reward}`
       : "";
-    let txIn = options.txIn;
-    let txOut = options.txOut;
-    let txInString = txInToString(txIn);
-    let txOutString = txOutToString(txOut);
+    let txInString = txInToString(options.txIn);
+    let txOutString = txOutToString(options.txOut);
     execSync(`${this.cliPath} transaction build-raw \
                 ${txInString} \
                 ${txOutString} \
@@ -425,6 +511,15 @@ class CardanoJs {
     return `${this.dir}/tmp/tx_${UID}.raw`;
   }
 
+  /**
+   *
+   * @param {Object} options
+   * @param {path} options.txBody
+   * @param {JSON} options.txIn
+   * @param {JSON} options.txOut
+   * @param {number} options.witnessCount
+   * @returns {lovelace}
+   */
   transactionCalculateMinFee(options) {
     return parseInt(
       execSync(`${this.cliPath} transaction calculate-min-fee \
@@ -440,12 +535,26 @@ class CardanoJs {
     );
   }
 
+  /**
+   *
+   * @param {Object} options
+   * @param {Array<path>} options.signingKeys - One ore more signing keys
+   * @param {JSON=} options.scriptFile
+   * @param {path} options.txBody
+   * @returns {path}
+   */
   transactionSign(options) {
     let UID = Math.random().toString(36).substr(2, 9);
     let signingKeys = signingKeysToString(options.signingKeys);
-    let scriptFile = options.scriptFile
-      ? `--script-file ${options.scriptFile}`
-      : "";
+    let scriptFile = "";
+    if (options.scriptFile) {
+      let UIDScript = Math.random().toString(36).substr(2, 9);
+      fs.writeFileSync(
+        `${this.dir}/tmp/script_${UIDScript}.json`,
+        JSON.stringify(script)
+      );
+      scriptFile = `--script-file ${this.dir}/tmp/script_${UIDScript}.json`;
+    }
     execSync(`${this.cliPath} transaction sign \
         --tx-body-file ${options.txBody} \
         ${scriptFile} \
@@ -455,11 +564,25 @@ class CardanoJs {
     return `${this.dir}/tmp/tx_${UID}.signed`;
   }
 
+  /**
+   *
+   * @param {Object} options
+   * @param {path} options.txBody
+   * @param {path} options.signingKey
+   * @param {JSON=} options.scriptFile
+   * @returns {path}
+   */
   transactionWitness(options) {
     let UID = Math.random().toString(36).substr(2, 9);
-    let scriptFile = options.scriptFile
-      ? `--script-file ${options.scriptFile}`
-      : "";
+    let scriptFile = "";
+    if (options.scriptFile) {
+      let UIDScript = Math.random().toString(36).substr(2, 9);
+      fs.writeFileSync(
+        `${this.dir}/tmp/script_${UIDScript}.json`,
+        JSON.stringify(script)
+      );
+      scriptFile = `--script-file ${this.dir}/tmp/script_${UIDScript}.json`;
+    }
     execSync(`${this.cliPath} transaction witness \
         --tx-body-file ${options.txBody} \
         ${scriptFile} \
@@ -469,6 +592,13 @@ class CardanoJs {
     return `${this.dir}/tmp/tx_${UID}.witness`;
   }
 
+  /**
+   *
+   * @param {Object} options
+   * @param {path} options.txBody
+   * @param {Array<path>} options.witnessFiles
+   * @returns {path}
+   */
   transactionAssemble(options) {
     let UID = Math.random().toString(36).substr(2, 9);
     let witnessFiles = witnessFilesToString(options.witnessFiles);
@@ -479,6 +609,13 @@ class CardanoJs {
     return `${this.dir}/tmp/tx_${UID}.signed`;
   }
 
+  /**
+   *
+   *
+   * @param {path} tx - Path to signed transaction file
+   *
+   * @returns {string} - Transaction hash
+   */
   transactionSubmit(tx) {
     execSync(
       `${this.cliPath} transaction submit ${this.network} --tx-file ${tx}`
@@ -488,7 +625,10 @@ class CardanoJs {
 
   /**
    *
-   * @param {JSON} options {txBody: String, txFile: String}
+   * @param {Object} options
+   * @param {path=} options.txBody
+   * @param {path=} options.txFile
+   * @returns {path}
    */
   transactionTxid(options) {
     let txArg = options.txBody
