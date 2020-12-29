@@ -27,7 +27,7 @@ cd CardanoJs
 npm install
 ```
 
-### Getting started
+## Getting started
 
 ```javascript
 const CardanoJs = require("cardanoJs");
