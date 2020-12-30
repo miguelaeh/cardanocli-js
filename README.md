@@ -16,7 +16,7 @@ This is a library, which wraps the cardano-cli with JavaScript and makes it poss
 #### NPM
 
 ```bash
-npm install cardanoJs
+npm install cardanojs
 ```
 
 #### From source
@@ -30,7 +30,7 @@ npm install
 ## Getting started
 
 ```javascript
-const CardanoJs = require("cardanoJs");
+const CardanoJs = require("cardanojs");
 
 const cardanoJs = new CardanoJs({ era: "allegra" });
 
