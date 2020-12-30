@@ -31,8 +31,9 @@ npm install
 
 ```javascript
 const CardanoJs = require("cardanojs");
+const shelleyGenesisPath = "/home/ada/mainnet-shelley-genensis.json";
 
-const cardanoJs = new CardanoJs({ era: "allegra" });
+const cardanoJs = new CardanoJs({ era: "allegra", shelleyGenesisPath });
 
 const createWallet = (accout) => {
   cardanoJs.addressKeyGen(accout);
@@ -42,8 +43,19 @@ const createWallet = (accout) => {
   return cardanoJs.wallet(accout);
 };
 
+const createPool = (name) => {
+  cardanoJs.nodeKeyGenKES(name);
+  cardanoJs.nodeKeyGen(name);
+  cardanoJs.nodeIssueOpCert(name);
+  cardanoJs.nodeKeyGenVRF(name);
+  return cardanoJs.pool(name);
+};
+
 const wallet = createWallet("Ada");
+const pool = createPool("Berry");
+
 console.log(wallet.paymentAddr);
+console.log(pool.file("vrf.vkey"));
 ```
 
 Check /examples for more use cases.
