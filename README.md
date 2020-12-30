@@ -31,7 +31,7 @@ npm install
 
 ```javascript
 const CardanocliJs = require("cardanocli-js");
-const shelleyGenesisPath = "/home/ada/mainnet-shelley-genensis.json";
+const shelleyGenesisPath = "/home/ada/mainnet-shelley-genesis.json";
 
 const cardanocliJs = new CardanocliJs({ era: "allegra", shelleyGenesisPath });
 
