@@ -30,16 +30,32 @@ const {
  * @property {string}
  */
 
+/**
+ * @typedef {Object} wallet
+ * @property {string} name
+ * @property {paymentAddr} paymentAddr
+ * @property {stakeAddr} stakeAddr
+ * @property {lovelace} balance
+ * @property {(lovelace | string)} reward
+ * @property {function} file - File name as argument returns path
+ */
+
+/**
+ * @typedef {Object} pool
+ * @property {string} name
+ * @property {function} file - File name as argument returns path
+ */
+
 class CardanoJs {
   /**
    *
    * @param {Object} options
    * @param {path=} options.shelleyGenesisPath
-   * @param {path=} options.socketPath
-   * @param {path=} options.cliPath
-   * @param {path=} options.dir
+   * @param {path=} options.socketPath - Default: Env Variable
+   * @param {path=} options.cliPath - Default: Env Variable
+   * @param {path=} options.dir - Default: Working Dir
    * @param {string=} options.era
-   * @param {string=} options.network
+   * @param {string=} options.network - Default: mainnet
    */
 
   constructor(options) {
@@ -232,7 +248,7 @@ class CardanoJs {
   /**
    *
    * @param {string} account - Name of the account
-   * @returns {object}
+   * @returns {wallet}
    */
   wallet(account) {
     const paymentAddr = fs
@@ -279,7 +295,7 @@ class CardanoJs {
   /**
    *
    * @param {string} poolName - Name of the pool
-   * @returns {object}
+   * @returns {pool}
    */
   pool(poolName) {
     return {
