@@ -1,5 +1,5 @@
 {
-  "name": "alessandrokonrad/cardanojs",
+  "name": "@alessandrokonrad/cardanojs",
   "version": "1.0.0",
   "description": "A library binding the cardano-cli to JavaScript",
   "main": "index.js",
