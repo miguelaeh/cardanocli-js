@@ -46,7 +46,7 @@ const {
  * @property {function} file - File name as argument returns path
  */
 
-class CardanoJs {
+class CardanocliJs {
   /**
    *
    * @param {Object} options
@@ -712,4 +712,4 @@ class CardanoJs {
   }
 }
 
-module.exports = CardanoJs;
+module.exports = CardanocliJs;

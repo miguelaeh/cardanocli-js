@@ -1,4 +1,4 @@
-const CardanoJs = require("../index.js");
+const CardanocliJs = require("../index.js");
 const os = require("os");
 const path = require("path");
 
@@ -9,7 +9,7 @@ const shelleyPath = path.join(
   "testnet-shelley-genesis.json"
 );
 
-const cardanoJs = new CardanoJs({
+const cardanocliJs = new CardanocliJs({
   era: "allegra",
   network: "testnet-magic 1097911063",
   dir: dir,
@@ -18,40 +18,40 @@ const cardanoJs = new CardanoJs({
 
 const deregisterWallet = (wallet) => {
   let account = wallet.name;
-  let keyDeposit = cardanoJs.queryProtcolParameters().keyDeposit;
-  let stakeCert = cardanoJs.stakeAddressDeregistrationCertificate(account);
-  let paymentAddress = cardanoJs.wallet(account).paymentAddr;
-  let balance = cardanoJs.wallet(account).balance;
+  let keyDeposit = cardanocliJs.queryProtcolParameters().keyDeposit;
+  let stakeCert = cardanocliJs.stakeAddressDeregistrationCertificate(account);
+  let paymentAddress = cardanocliJs.wallet(account).paymentAddr;
+  let balance = cardanocliJs.wallet(account).balance;
   let tx = {
-    txIn: cardanoJs.queryUtxo(paymentAddress),
+    txIn: cardanocliJs.queryUtxo(paymentAddress),
     txOut: [{ address: paymentAddress, amount: balance + keyDeposit }],
     certs: [stakeCert],
     witnessCount: 2,
   };
-  let txBodyRaw = cardanoJs.transactionBuildRaw(tx);
-  let fee = cardanoJs.transactionCalculateMinFee({
+  let txBodyRaw = cardanocliJs.transactionBuildRaw(tx);
+  let fee = cardanocliJs.transactionCalculateMinFee({
     ...tx,
     txBody: txBodyRaw,
   });
   tx.txOut[0].amount -= fee;
-  let txBody = cardanoJs.transactionBuildRaw({ ...tx, fee });
-  let txSigned = cardanoJs.transactionSign({
+  let txBody = cardanocliJs.transactionBuildRaw({ ...tx, fee });
+  let txSigned = cardanocliJs.transactionSign({
     txBody,
     signingKeys: [
-      cardanoJs.wallet(account).file("payment.skey"),
-      cardanoJs.wallet(account).file("stake.skey"),
+      cardanocliJs.wallet(account).file("payment.skey"),
+      cardanocliJs.wallet(account).file("stake.skey"),
     ],
   });
 
   return txSigned;
 };
 
-let wallet = cardanoJs.wallet("Test");
+let wallet = cardanocliJs.wallet("Test");
 
 console.log(wallet);
 
 let tx = deregisterWallet(wallet);
 
-let txHash = cardanoJs.transactionSubmit(tx);
+let txHash = cardanocliJs.transactionSubmit(tx);
 
 console.log("TxHash: " + txHash);

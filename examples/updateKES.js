@@ -1,4 +1,4 @@
-const CardanoJs = require("../index.js");
+const CardanocliJs = require("../index.js");
 const os = require("os");
 const path = require("path");
 
@@ -9,15 +9,15 @@ const shelleyPath = path.join(
   "testnet-shelley-genesis.json"
 );
 
-const cardanoJs = new CardanoJs({
+const cardanocliJs = new CardanocliJs({
   era: "allegra",
   network: "testnet-magic 1097911063",
   dir: dir,
   shelleyGenesisPath: shelleyPath,
 });
 
-const pool = cardanoJs.pool("BerryJs");
+const pool = cardanocliJs.pool("BerryJs");
 
 console.log("Generating new KES keys and Node Operational certificate");
-cardanoJs.nodeKeyGenKES(pool.name);
-cardanoJs.nodeIssueOpCert(pool.name);
+cardanocliJs.nodeKeyGenKES(pool.name);
+cardanocliJs.nodeIssueOpCert(pool.name);

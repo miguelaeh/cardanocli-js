@@ -1,4 +1,4 @@
-const CardanoJs = require("../index.js");
+const CardanocliJs = require("../index.js");
 const os = require("os");
 const path = require("path");
 const fetch = require("sync-fetch");
@@ -10,7 +10,7 @@ const shelleyPath = path.join(
   "testnet-shelley-genesis.json"
 );
 
-const cardanoJs = new CardanoJs({
+const cardanocliJs = new CardanocliJs({
   era: "allegra",
   network: "testnet-magic 1097911063",
   dir: dir,
@@ -18,38 +18,38 @@ const cardanoJs = new CardanoJs({
 });
 
 const createPool = (name) => {
-  cardanoJs.nodeKeyGenKES(name);
-  cardanoJs.nodeKeyGen(name);
-  cardanoJs.nodeIssueOpCert(name);
-  cardanoJs.nodeKeyGenVRF(name);
-  return cardanoJs.pool(name);
+  cardanocliJs.nodeKeyGenKES(name);
+  cardanocliJs.nodeKeyGen(name);
+  cardanocliJs.nodeIssueOpCert(name);
+  cardanocliJs.nodeKeyGenVRF(name);
+  return cardanocliJs.pool(name);
 };
 
 const registerPool = (pool, wallet, data) => {
   let name = pool.name;
-  let poolId = cardanoJs.stakePoolId(name);
-  let poolCert = cardanoJs.stakePoolRegistrationCertificate(name, data);
-  let delegCert = cardanoJs.stakeAddressDelegationCertificate(
+  let poolId = cardanocliJs.stakePoolId(name);
+  let poolCert = cardanocliJs.stakePoolRegistrationCertificate(name, data);
+  let delegCert = cardanocliJs.stakeAddressDelegationCertificate(
     wallet.name,
     poolId
   );
-  let poolDeposit = cardanoJs.queryProtcolParameters().poolDeposit;
+  let poolDeposit = cardanocliJs.queryProtcolParameters().poolDeposit;
   let tx = {
-    txIn: cardanoJs.queryUtxo(wallet.paymentAddr),
+    txIn: cardanocliJs.queryUtxo(wallet.paymentAddr),
     txOut: [
       { address: wallet.paymentAddr, amount: wallet.balance - poolDeposit },
     ],
     witnessCount: 3,
     certs: [poolCert, delegCert],
   };
-  let txBodyRaw = cardanoJs.transactionBuildRaw(tx);
-  let fee = cardanoJs.transactionCalculateMinFee({
+  let txBodyRaw = cardanocliJs.transactionBuildRaw(tx);
+  let fee = cardanocliJs.transactionCalculateMinFee({
     ...tx,
     txBody: txBodyRaw,
   });
   tx.txOut[0].amount -= fee;
-  let txBody = cardanoJs.transactionBuildRaw({ ...tx, fee });
-  let txSigned = cardanoJs.transactionSign({
+  let txBody = cardanocliJs.transactionBuildRaw({ ...tx, fee });
+  let txSigned = cardanocliJs.transactionSign({
     txBody,
     signingKeys: [
       wallet.file("payment.skey"),
@@ -62,13 +62,13 @@ const registerPool = (pool, wallet, data) => {
 
 let pool = createPool("BerryJs");
 
-const wallet = cardanoJs.wallet("Ada");
+const wallet = cardanocliJs.wallet("Ada");
 console.log(wallet);
 
 const poolData = {
-  pledge: cardanoJs.toLovelace(100),
+  pledge: cardanocliJs.toLovelace(100),
   margin: 0.015,
-  cost: cardanoJs.toLovelace(340),
+  cost: cardanocliJs.toLovelace(340),
   owners: [wallet.file("stake.vkey")],
   rewardAccount: wallet.file("stake.vkey"),
   relays: [
@@ -76,13 +76,13 @@ const poolData = {
     { host: "relay.two.io", port: 3001 },
   ],
   url: "<URL>",
-  metaHash: cardanoJs.stakePoolMetadataHash(fetch("<URl>").text()),
+  metaHash: cardanocliJs.stakePoolMetadataHash(fetch("<URl>").text()),
 };
 
 console.log(poolData);
 
 let tx = registerPool(pool, wallet, poolData);
 
-let txHash = cardanoJs.transactionSubmit(tx);
+let txHash = cardanocliJs.transactionSubmit(tx);
 
 console.log("TxHash: " + txHash);

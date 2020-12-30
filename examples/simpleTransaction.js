@@ -1,4 +1,4 @@
-const CardanoJs = require("../index.js");
+const CardanocliJs = require("../index.js");
 const os = require("os");
 const path = require("path");
 
@@ -9,7 +9,7 @@ const shelleyPath = path.join(
   "testnet-shelley-genesis.json"
 );
 
-const cardanoJs = new CardanoJs({
+const cardanocliJs = new CardanocliJs({
   era: "allegra",
   network: "testnet-magic 1097911063",
   dir: dir,
@@ -17,9 +17,9 @@ const cardanoJs = new CardanoJs({
 });
 
 //funded wallet
-const sender = cardanoJs.wallet("Ales");
+const sender = cardanocliJs.wallet("Ales");
 console.log(
-  "Balance of Sender wallet: " + cardanoJs.toAda(sender.balance) + " ADA"
+  "Balance of Sender wallet: " + cardanocliJs.toAda(sender.balance) + " ADA"
 );
 
 //receiver address
@@ -28,19 +28,19 @@ const receiver =
 
 // create raw transaction
 let txInfo = {
-  txIn: cardanoJs.queryUtxo(sender.paymentAddr),
+  txIn: cardanocliJs.queryUtxo(sender.paymentAddr),
   txOut: [
     {
       address: sender.paymentAddr,
-      amount: sender.balance - cardanoJs.toLovelace(5),
+      amount: sender.balance - cardanocliJs.toLovelace(5),
     }, //amount going back to sender
-    { address: receiver, amount: cardanoJs.toLovelace(5) }, //amount going to receiver
+    { address: receiver, amount: cardanocliJs.toLovelace(5) }, //amount going to receiver
   ],
 };
-let raw = cardanoJs.transactionBuildRaw(txInfo);
+let raw = cardanocliJs.transactionBuildRaw(txInfo);
 
 //calculate fee
-let fee = cardanoJs.transactionCalculateMinFee({
+let fee = cardanocliJs.transactionCalculateMinFee({
   ...txInfo,
   txBody: raw,
   witnessCount: 1,
@@ -50,14 +50,14 @@ let fee = cardanoJs.transactionCalculateMinFee({
 txInfo.txOut[0].amount -= fee;
 
 //create final transaction
-let tx = cardanoJs.transactionBuildRaw({ ...txInfo, fee });
+let tx = cardanocliJs.transactionBuildRaw({ ...txInfo, fee });
 
 //sign the transaction
-let txSigned = cardanoJs.transactionSign({
+let txSigned = cardanocliJs.transactionSign({
   txBody: tx,
   signingKeys: [sender.file("payment.skey")],
 });
 
 //broadcast transaction
-let txHash = cardanoJs.transactionSubmit(txSigned);
+let txHash = cardanocliJs.transactionSubmit(txSigned);
 console.log("TxHash: " + txHash);
