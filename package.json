@@ -1,5 +1,5 @@
 {
-  "name": "@alessandrokonrad/cardanojs",
+  "name": "cardanojs",
   "version": "1.0.0",
   "description": "A library binding the cardano-cli to JavaScript",
   "main": "index.js",
@@ -10,6 +10,5 @@
   "license": "ISC",
   "dependencies": {
     "sync-fetch": "^0.3.0"
-  },
-  "repository": "git://github.com/Berry-Pool/CardanoJs"
+  }
 }
