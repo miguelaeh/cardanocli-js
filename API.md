@@ -39,7 +39,7 @@
   - [.stakeAddressBuild(account)](#CardanocliJs+stakeAddressBuild) ⇒ [<code>path</code>](#path)
   - [.addressBuild(account)](#CardanocliJs+addressBuild) ⇒ [<code>path</code>](#path)
   - [.addressKeyHash(account)](#CardanocliJs+addressKeyHash)
-  - [.addressInfo(address)](#CardanocliJs+addressInfo)
+  - [.addressInfo(address)](#CardanocliJs+addressInfo) ⇒ <code>object</code>
   - [.addressBuildScript(script)](#CardanocliJs+addressBuildScript) ⇒ [<code>paymentAddr</code>](#paymentAddr)
   - [.wallet(account)](#CardanocliJs+wallet) ⇒ [<code>wallet</code>](#wallet)
   - [.pool(poolName)](#CardanocliJs+pool) ⇒ [<code>pool</code>](#pool)
@@ -163,7 +163,7 @@
 
 <a name="CardanocliJs+addressInfo"></a>
 
-### cardanocliJs.addressInfo(address)
+### cardanocliJs.addressInfo(address) ⇒ <code>object</code>
 
 **Kind**: instance method of [<code>CardanocliJs</code>](#CardanocliJs)
 

@@ -217,13 +217,16 @@ class CardanocliJs {
   /**
    *
    * @param {paymentAddr} address
+   * @returns {object}
    */
   addressInfo(address) {
-    return execSync(`${this.cliPath} address info \
+    return JSON.parse(
+      execSync(`${this.cliPath} address info \
             --address ${address} \
             `)
-      .toString()
-      .replace(/\s+/g, " ");
+        .toString()
+        .replace(/\s+/g, " ")
+    );
   }
 
   /**
