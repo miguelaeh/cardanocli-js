@@ -302,10 +302,12 @@ class CardanoJs {
       name: poolName,
       file: (fileName) => {
         try {
-          fs.readFileSync(`${this.dir}/priv/pool/${name}/${name}.${fileName}`);
-          return `${this.dir}/priv/pool/${name}/${name}.${fileName}`;
+          fs.readFileSync(
+            `${this.dir}/priv/pool/${poolName}/${poolName}.${fileName}`
+          );
+          return `${this.dir}/priv/pool/${poolName}/${poolName}.${fileName}`;
         } catch (err) {
-          throw new Error(`File ${fileName} of Pool ${name} doesn't exist`);
+          throw new Error(`File ${fileName} of Pool ${poolName} doesn't exist`);
         }
       },
     };
@@ -393,9 +395,10 @@ class CardanoJs {
   /**
    *
    * @param {string} poolName - Name of the pool
+   * @param {number=} kesPeriod - Optional (Offline mode)
    * @returns {path}
    */
-  nodeIssueOpCert(poolName) {
+  nodeIssueOpCert(poolName, kesPeriod) {
     execSync(`${this.cliPath} node issue-op-cert \
                         --kes-verification-key-file ${
                           this.dir
@@ -406,7 +409,9 @@ class CardanoJs {
                         --operational-certificate-issue-counter ${
                           this.dir
                         }/priv/pool/${poolName}/${poolName}.node.counter \
-                        --kes-period ${this.KESPeriod()} \
+                        --kes-period ${
+                          kesPeriod ? kesPeriod : this.KESPeriod()
+                        } \
                         --out-file ${
                           this.dir
                         }/priv/pool/${poolName}/${poolName}.node.cert 
@@ -521,8 +526,8 @@ class CardanoJs {
   /**
    *
    * @param {Object} options
-   * @param {object} options.txIn
-   * @param {object} options.txOut
+   * @param {Array<object>} options.txIn
+   * @param {Array<object>} options.txOut
    * @param {object=} options.withdrawal
    * @param {Array<path>=} options.certs
    * @param {lovelace=} options.fee
@@ -555,8 +560,8 @@ class CardanoJs {
    *
    * @param {Object} options
    * @param {path} options.txBody
-   * @param {object} options.txIn
-   * @param {object} options.txOut
+   * @param {Array<object>} options.txIn
+   * @param {Array<object>} options.txOut
    * @param {number} options.witnessCount
    * @returns {lovelace}
    */
