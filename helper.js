@@ -57,3 +57,21 @@ exports.witnessFilesToString = (witnessFiles) => {
   );
   return result;
 };
+
+exports.fileException = (callback) => {
+  try {
+    callback();
+  } catch {}
+};
+
+exports.setKeys = (obj, path, value) => {
+  var pList = path.split(".");
+  var len = pList.length;
+  for (var i = 0; i < len - 1; i++) {
+    var elem = pList[i];
+    if (!obj[elem]) obj[elem] = {};
+    obj = obj[elem];
+  }
+
+  obj[pList[len - 1]] = value;
+};

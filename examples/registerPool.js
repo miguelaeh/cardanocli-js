@@ -51,11 +51,7 @@ const registerPool = (pool, wallet, data) => {
   let txBody = cardanocliJs.transactionBuildRaw({ ...tx, fee });
   let txSigned = cardanocliJs.transactionSign({
     txBody,
-    signingKeys: [
-      wallet.file("payment.skey"),
-      wallet.file("stake.skey"),
-      pool.file("node.skey"),
-    ],
+    signingKeys: [wallet.payment.skey, wallet.stake.skey, pool.node.skey],
   });
   return txSigned;
 };
@@ -69,8 +65,8 @@ const poolData = {
   pledge: cardanocliJs.toLovelace(100),
   margin: 0.015,
   cost: cardanocliJs.toLovelace(340),
-  owners: [wallet.file("stake.vkey")],
-  rewardAccount: wallet.file("stake.vkey"),
+  owners: [wallet.stake.vkey],
+  rewardAccount: wallet.stake.vkey,
   relays: [
     { host: "relay.one.io", port: 3001 },
     { host: "relay.two.io", port: 3001 },

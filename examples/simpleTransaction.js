@@ -55,7 +55,7 @@ let tx = cardanocliJs.transactionBuildRaw({ ...txInfo, fee });
 //sign the transaction
 let txSigned = cardanocliJs.transactionSign({
   txBody: tx,
-  signingKeys: [sender.file("payment.skey")],
+  signingKeys: [sender.payment.skey],
 });
 
 //broadcast transaction

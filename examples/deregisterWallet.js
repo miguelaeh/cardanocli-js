@@ -38,8 +38,8 @@ const deregisterWallet = (wallet) => {
   let txSigned = cardanocliJs.transactionSign({
     txBody,
     signingKeys: [
-      cardanocliJs.wallet(account).file("payment.skey"),
-      cardanocliJs.wallet(account).file("stake.skey"),
+      cardanocliJs.wallet(account).payment.skey,
+      cardanocliJs.wallet(account).stake.skey,
     ],
   });
 

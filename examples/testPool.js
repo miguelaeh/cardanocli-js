@@ -16,7 +16,6 @@ const cardanocliJs = new CardanocliJs({
   shelleyGenesisPath: shelleyPath,
 });
 
-let wallet = cardanocliJs.wallet("Ales");
+const pool = cardanocliJs.pool("BerryJs");
 
-console.log(wallet.balance().amount);
-console.log(wallet.balance().utxo);
+console.log(pool);

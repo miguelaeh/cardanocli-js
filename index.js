@@ -8,6 +8,8 @@ const {
   txOutToString,
   signingKeysToString,
   witnessFilesToString,
+  fileException,
+  setKeys,
 } = require("./helper");
 
 /**
@@ -28,22 +30,6 @@ const {
 /**
  * @typedef stakeAddr
  * @property {string}
- */
-
-/**
- * @typedef {Object} wallet
- * @property {string} name
- * @property {paymentAddr} paymentAddr
- * @property {stakeAddr} stakeAddr
- * @property {lovelace} balance
- * @property {(lovelace | string)} reward
- * @property {function} file - File name as argument returns path
- */
-
-/**
- * @typedef {Object} pool
- * @property {string} name
- * @property {function} file - File name as argument returns path
  */
 
 class CardanocliJs {
@@ -251,28 +237,49 @@ class CardanocliJs {
   /**
    *
    * @param {string} account - Name of the account
-   * @returns {wallet}
    */
   wallet(account) {
-    const paymentAddr = fs
-      .readFileSync(
-        `${this.dir}/priv/wallet/${account}/${account}.payment.addr`
-      )
-      .toString();
-    const stakingAddr = fs
-      .readFileSync(`${this.dir}/priv/wallet/${account}/${account}.stake.addr`)
-      .toString();
+    let paymentAddr = "No payment keys generated";
+    let stakingAddr = "No staking keys generated";
 
-    const balance = this.queryUtxo(paymentAddr).reduce(
-      (acc, curr) => acc + curr.amount,
-      0
-    );
+    fileException(() => {
+      paymentAddr = fs
+        .readFileSync(
+          `${this.dir}/priv/wallet/${account}/${account}.payment.addr`
+        )
+        .toString();
+    });
+    fileException(() => {
+      stakingAddr = fs
+        .readFileSync(
+          `${this.dir}/priv/wallet/${account}/${account}.stake.addr`
+        )
+        .toString();
+    });
 
-    let reward = this.queryStakeAddressInfo(stakingAddr);
-    reward = reward.find((delegation) => delegation.address == stakingAddr)
-      ? reward.find((delegation) => delegation.address == stakingAddr)
-          .rewardAccountBalance
-      : "Staking key not registered";
+    let files = fs.readdirSync(`${this.dir}/priv/wallet/${account}`);
+    let keysPath = {};
+    files.forEach((file) => {
+      let name = file.split(".")[1] + "." + file.split(".")[2];
+      setKeys(keysPath, name, `${this.dir}/priv/wallet/${account}/${file}`);
+    });
+
+    let balance = () => {
+      let utxo = this.queryUtxo(paymentAddr);
+      let amount = utxo.reduce((acc, curr) => acc + curr.amount, 0);
+      return { utxo, amount };
+    };
+    let reward = () => {
+      let r;
+      try {
+        r = this.queryStakeAddressInfo(stakingAddr);
+        r = r.find((delegation) => delegation.address == stakingAddr)
+          .rewardAccountBalance;
+      } catch {
+        r = "Staking key is not registered";
+      }
+      return r;
+    };
 
     return {
       name: account,
@@ -280,39 +287,24 @@ class CardanocliJs {
       stakingAddr,
       balance,
       reward,
-      file: (fileName) => {
-        try {
-          fs.readFileSync(
-            `${this.dir}/priv/wallet/${account}/${account}.${fileName}`
-          );
-          return `${this.dir}/priv/wallet/${account}/${account}.${fileName}`;
-        } catch (err) {
-          throw new Error(
-            `File ${fileName} of Account ${account} doesn't exist`
-          );
-        }
-      },
+      ...keysPath,
     };
   }
 
   /**
    *
    * @param {string} poolName - Name of the pool
-   * @returns {pool}
    */
   pool(poolName) {
+    let files = fs.readdirSync(`${this.dir}/priv/pool/${poolName}`);
+    let keysPath = {};
+    files.forEach((file) => {
+      let name = file.split(".")[1] + "." + file.split(".")[2];
+      setKeys(keysPath, name, `${this.dir}/priv/pool/${poolName}/${file}`);
+    });
     return {
       name: poolName,
-      file: (fileName) => {
-        try {
-          fs.readFileSync(
-            `${this.dir}/priv/pool/${poolName}/${poolName}.${fileName}`
-          );
-          return `${this.dir}/priv/pool/${poolName}/${poolName}.${fileName}`;
-        } catch (err) {
-          throw new Error(`File ${fileName} of Pool ${poolName} doesn't exist`);
-        }
-      },
+      ...keysPath,
     };
   }
 
