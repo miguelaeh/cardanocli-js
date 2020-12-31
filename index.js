@@ -145,6 +145,10 @@ class CardanocliJs {
                         --verification-key-file ${this.dir}/priv/wallet/${account}/${account}.payment.vkey \
                         --signing-key-file ${this.dir}/priv/wallet/${account}/${account}.payment.skey
                     `);
+    return {
+      vkey: `${this.dir}/priv/wallet/${account}/${account}.payment.vkey`,
+      skey: `${this.dir}/priv/wallet/${account}/${account}.payment.skey`,
+    };
   }
 
   /**
@@ -157,6 +161,10 @@ class CardanocliJs {
                         --verification-key-file ${this.dir}/priv/wallet/${account}/${account}.stake.vkey \
                         --signing-key-file ${this.dir}/priv/wallet/${account}/${account}.stake.skey
                     `);
+    return {
+      vkey: `${this.dir}/priv/wallet/${account}/${account}.stake.vkey`,
+      skey: `${this.dir}/priv/wallet/${account}/${account}.stake.skey`,
+    };
   }
 
   /**
@@ -372,6 +380,10 @@ class CardanocliJs {
                         --verification-key-file ${this.dir}/priv/pool/${poolName}/${poolName}.kes.vkey \
                         --signing-key-file ${this.dir}/priv/pool/${poolName}/${poolName}.kes.skey
                     `);
+    return {
+      vkey: `${this.dir}/priv/pool/${poolName}/${poolName}.kes.vkey`,
+      skey: `${this.dir}/priv/pool/${poolName}/${poolName}.kes.skey`,
+    };
   }
 
   /**
@@ -385,6 +397,11 @@ class CardanocliJs {
                         --cold-signing-key-file ${this.dir}/priv/pool/${poolName}/${poolName}.node.skey \
                         --operational-certificate-issue-counter ${this.dir}/priv/pool/${poolName}/${poolName}.node.counter 
                     `);
+    return {
+      vkey: `${this.dir}/priv/pool/${poolName}/${poolName}.node.vkey`,
+      skey: `${this.dir}/priv/pool/${poolName}/${poolName}.node.skey`,
+      counter: `${this.dir}/priv/pool/${poolName}/${poolName}.node.counter`,
+    };
   }
 
   /**
@@ -424,6 +441,10 @@ class CardanocliJs {
                         --verification-key-file ${this.dir}/priv/pool/${poolName}/${poolName}.vrf.vkey \
                         --signing-key-file ${this.dir}/priv/pool/${poolName}/${poolName}.vrf.skey
                     `);
+    return {
+      vkey: `${this.dir}/priv/pool/${poolName}/${poolName}.vrf.vkey`,
+      skey: `${this.dir}/priv/pool/${poolName}/${poolName}.vrf.skey`,
+    };
   }
 
   /**
@@ -513,9 +534,9 @@ class CardanocliJs {
     execSync(`${this.cliPath} stake-pool deregistration-certificate \
                 --cold-verification-key-file ${this.dir}/priv/pool/${poolName}/${poolName}.node.vkey \
                 --epoch ${epoch}
-                --out-file ${this.dir}/priv/pool/${poolName}/${poolName}.pool.dereg
+                --out-file ${this.dir}/priv/pool/${poolName}/${poolName}.pool.cert
               `);
-    return `${this.dir}/priv/pool/${poolName}/${poolName}.pool.dereg`;
+    return `${this.dir}/priv/pool/${poolName}/${poolName}.pool.cert`;
   }
 
   /**
