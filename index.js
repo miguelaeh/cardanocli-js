@@ -304,6 +304,13 @@ class CardanocliJs {
    * @param {string} poolName - Name of the pool
    */
   pool(poolName) {
+    let id;
+    fileException(() => {
+      fs.readFileSync(
+        `${this.dir}/priv/pool/${poolName}/${poolName}.node.vkey`
+      );
+      id = this.stakePoolId(poolName);
+    });
     let files = fs.readdirSync(`${this.dir}/priv/pool/${poolName}`);
     let keysPath = {};
     files.forEach((file) => {
@@ -312,6 +319,7 @@ class CardanocliJs {
     });
     return {
       name: poolName,
+      id,
       ...keysPath,
     };
   }
@@ -533,7 +541,7 @@ class CardanocliJs {
   stakePoolDeregistrationCertificate(poolName, epoch) {
     execSync(`${this.cliPath} stake-pool deregistration-certificate \
                 --cold-verification-key-file ${this.dir}/priv/pool/${poolName}/${poolName}.node.vkey \
-                --epoch ${epoch}
+                --epoch ${epoch} \
                 --out-file ${this.dir}/priv/pool/${poolName}/${poolName}.pool.cert
               `);
     return `${this.dir}/priv/pool/${poolName}/${poolName}.pool.cert`;

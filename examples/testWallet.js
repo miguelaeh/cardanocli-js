@@ -19,4 +19,4 @@ const cardanocliJs = new CardanocliJs({
 let wallet = cardanocliJs.wallet("Ales");
 
 console.log(wallet.balance().amount);
-console.log(wallet);
+console.log(wallet.balance().utxo);

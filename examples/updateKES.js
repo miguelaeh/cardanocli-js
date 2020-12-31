@@ -19,5 +19,8 @@ const cardanocliJs = new CardanocliJs({
 const pool = cardanocliJs.pool("BerryJs");
 
 console.log("Generating new KES keys and Node Operational certificate");
-cardanocliJs.nodeKeyGenKES(pool.name);
-cardanocliJs.nodeIssueOpCert(pool.name);
+let kes = cardanocliJs.nodeKeyGenKES(pool.name);
+let op = cardanocliJs.nodeIssueOpCert(pool.name);
+
+console.log(kes);
+console.log(op);
