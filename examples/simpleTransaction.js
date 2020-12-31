@@ -32,7 +32,7 @@ let txInfo = {
   txOut: [
     {
       address: sender.paymentAddr,
-      amount: sender.balance - cardanocliJs.toLovelace(5),
+      amount: sender.balance().amount - cardanocliJs.toLovelace(5),
     }, //amount going back to sender
     { address: receiver, amount: cardanocliJs.toLovelace(5) }, //amount going to receiver
   ],

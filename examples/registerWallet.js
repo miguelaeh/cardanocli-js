@@ -29,7 +29,7 @@ const registerWallet = (wallet) => {
   let keyDeposit = cardanocliJs.queryProtcolParameters().keyDeposit;
   let stakeCert = cardanocliJs.stakeAddressRegistrationCertificate(account);
   let paymentAddress = cardanocliJs.wallet(account).paymentAddr;
-  let balance = cardanocliJs.wallet(account).balance;
+  let balance = cardanocliJs.wallet(account).balance().amount;
   let tx = {
     txIn: cardanocliJs.queryUtxo(paymentAddress),
     txOut: [{ address: paymentAddress, amount: balance - keyDeposit }],

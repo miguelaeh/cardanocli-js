@@ -37,7 +37,10 @@ const registerPool = (pool, wallet, data) => {
   let tx = {
     txIn: cardanocliJs.queryUtxo(wallet.paymentAddr),
     txOut: [
-      { address: wallet.paymentAddr, amount: wallet.balance - poolDeposit },
+      {
+        address: wallet.paymentAddr,
+        amount: wallet.balance().amount - poolDeposit,
+      },
     ],
     witnessCount: 3,
     certs: [poolCert, delegCert],
