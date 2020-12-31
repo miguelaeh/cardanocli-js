@@ -16,10 +16,6 @@
 <dd></dd>
 <dt><a href="#stakeAddr">stakeAddr</a></dt>
 <dd></dd>
-<dt><a href="#wallet">wallet</a> : <code>Object</code></dt>
-<dd></dd>
-<dt><a href="#pool">pool</a> : <code>Object</code></dt>
-<dd></dd>
 </dl>
 
 <a name="CardanocliJs"></a>
@@ -41,8 +37,8 @@
   - [.addressKeyHash(account)](#CardanocliJs+addressKeyHash)
   - [.addressInfo(address)](#CardanocliJs+addressInfo) ⇒ <code>object</code>
   - [.addressBuildScript(script)](#CardanocliJs+addressBuildScript) ⇒ [<code>paymentAddr</code>](#paymentAddr)
-  - [.wallet(account)](#CardanocliJs+wallet) ⇒ [<code>wallet</code>](#wallet)
-  - [.pool(poolName)](#CardanocliJs+pool) ⇒ [<code>pool</code>](#pool)
+  - [.wallet(account)](#CardanocliJs+wallet)
+  - [.pool(poolName)](#CardanocliJs+pool)
   - [.stakeAddressRegistrationCertificate(account)](#CardanocliJs+stakeAddressRegistrationCertificate) ⇒ [<code>path</code>](#path)
   - [.stakeAddressDeregistrationCertificate(account)](#CardanocliJs+stakeAddressDeregistrationCertificate) ⇒ [<code>path</code>](#path)
   - [.stakeAddressDelegationCertificate(account, poolId)](#CardanocliJs+stakeAddressDelegationCertificate) ⇒ [<code>path</code>](#path)
@@ -183,7 +179,7 @@
 
 <a name="CardanocliJs+wallet"></a>
 
-### cardanocliJs.wallet(account) ⇒ [<code>wallet</code>](#wallet)
+### cardanocliJs.wallet(account)
 
 **Kind**: instance method of [<code>CardanocliJs</code>](#CardanocliJs)
 
@@ -193,7 +189,7 @@
 
 <a name="CardanocliJs+pool"></a>
 
-### cardanocliJs.pool(poolName) ⇒ [<code>pool</code>](#pool)
+### cardanocliJs.pool(poolName)
 
 **Kind**: instance method of [<code>CardanocliJs</code>](#CardanocliJs)
 
@@ -491,31 +487,3 @@
 | Type                |
 | ------------------- |
 | <code>string</code> |
-
-<a name="wallet"></a>
-
-## wallet : <code>Object</code>
-
-**Kind**: global typedef  
-**Properties**
-
-| Name        | Type                                                      | Description                        |
-| ----------- | --------------------------------------------------------- | ---------------------------------- |
-| name        | <code>string</code>                                       |                                    |
-| paymentAddr | [<code>paymentAddr</code>](#paymentAddr)                  |                                    |
-| stakeAddr   | [<code>stakeAddr</code>](#stakeAddr)                      |                                    |
-| balance     | [<code>lovelace</code>](#lovelace)                        |                                    |
-| reward      | [<code>lovelace</code>](#lovelace) \| <code>string</code> |                                    |
-| file        | <code>function</code>                                     | File name as argument returns path |
-
-<a name="pool"></a>
-
-## pool : <code>Object</code>
-
-**Kind**: global typedef  
-**Properties**
-
-| Name | Type                  | Description                        |
-| ---- | --------------------- | ---------------------------------- |
-| name | <code>string</code>   |                                    |
-| file | <code>function</code> | File name as argument returns path |

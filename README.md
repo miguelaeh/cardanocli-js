@@ -57,7 +57,7 @@ const wallet = createWallet("Ada");
 const pool = createPool("Berry");
 
 console.log(wallet.paymentAddr);
-console.log(pool.file("vrf.vkey"));
+console.log(pool.vrf.vkey);
 ```
 
 Check /examples for more use cases.
