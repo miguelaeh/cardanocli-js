@@ -93,3 +93,17 @@ dir
                 <Lovelace.stake.skey>
                 ...
 ```
+
+## Tests
+
+Install npm dev dependencies using `npm install --also=dev`.
+
+Tests are using Jest framework and can be run by using `npm -s run test` command.
+
+To configure the test suite, make a copy of `.env.dist` and rename it `.env`. Then change all parameters values to fit your environment.
+
+**Caution**: The `TEST_WORKSPACE_DIR` will be deleted at the end of the test suite. **NEVER USE AN EXISTING DIRECTORY !!!** You may disable this behavior by commenting the cleanup function in `test/index.test.js`:
+
+    afterAll(() => {
+        // cleanUpTestDirectory();
+    });
