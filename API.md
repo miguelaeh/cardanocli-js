@@ -26,7 +26,7 @@
 
 - [CardanocliJs](#CardanocliJs)
   - [new CardanocliJs(options)](#new_CardanocliJs_new)
-  - [.queryProtcolParameters()](#CardanocliJs+queryProtcolParameters) ⇒ <code>object</code>
+  - [.queryProtocolParameters()](#CardanocliJs+queryProtocolParameters) ⇒ <code>object</code>
   - [.queryTip()](#CardanocliJs+queryTip) ⇒ <code>object</code>
   - [.queryStakeAddressInfo(address)](#CardanocliJs+queryStakeAddressInfo) ⇒ <code>object</code>
   - [.queryUtxo(address)](#CardanocliJs+queryUtxo) ⇒ <code>object</code>
@@ -76,9 +76,9 @@
 | [options.era]                | <code>string</code>        |                       |
 | [options.network]            | <code>string</code>        | Default: mainnet      |
 
-<a name="CardanocliJs+queryProtcolParameters"></a>
+<a name="CardanocliJs+queryProtocolParameters"></a>
 
-### cardanocliJs.queryProtcolParameters() ⇒ <code>object</code>
+### cardanocliJs.queryProtocolParameters() ⇒ <code>object</code>
 
 **Kind**: instance method of [<code>CardanocliJs</code>](#CardanocliJs)  
 <a name="CardanocliJs+queryTip"></a>

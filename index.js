@@ -70,7 +70,7 @@ class CardanocliJs {
   /**
    * @returns {object}
    */
-  queryProtcolParameters() {
+  queryProtocolParameters() {
     execSync(`${this.cliPath} query protocol-parameters \
                             --${this.network} \
                             --cardano-mode \
@@ -590,7 +590,7 @@ class CardanocliJs {
    * @returns {lovelace}
    */
   transactionCalculateMinFee(options) {
-    this.queryProtcolParameters();
+    this.queryProtocolParameters();
     return parseInt(
       execSync(`${this.cliPath} transaction calculate-min-fee \
                 --tx-body-file ${options.txBody} \

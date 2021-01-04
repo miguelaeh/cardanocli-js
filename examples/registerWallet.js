@@ -26,7 +26,7 @@ const createWallet = (accout) => {
 
 const registerWallet = (wallet) => {
   let account = wallet.name;
-  let keyDeposit = cardanocliJs.queryProtcolParameters().keyDeposit;
+  let keyDeposit = cardanocliJs.queryProtocolParameters().keyDeposit;
   let stakeCert = cardanocliJs.stakeAddressRegistrationCertificate(account);
   let paymentAddress = cardanocliJs.wallet(account).paymentAddr;
   let balance = cardanocliJs.wallet(account).balance().amount;

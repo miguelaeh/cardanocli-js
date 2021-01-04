@@ -23,8 +23,8 @@ afterAll(() => {
 
 describe('Basics & Utilities', () => {
 
-    test('queryProtcolParameters()', () => {
-        let obj = cardanoJs.queryProtcolParameters();
+    test('queryProtocolParameters()', () => {
+        let obj = cardanoJs.queryProtocolParameters();
         
         expect(Object.keys(obj).length).toEqual(17);
     

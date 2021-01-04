@@ -33,7 +33,7 @@ const registerPool = (pool, wallet, data) => {
     wallet.name,
     poolId
   );
-  let poolDeposit = cardanocliJs.queryProtcolParameters().poolDeposit;
+  let poolDeposit = cardanocliJs.queryProtocolParameters().poolDeposit;
   let tx = {
     txIn: wallet.balance().utxo,
     txOut: [
