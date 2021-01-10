@@ -71,6 +71,19 @@ class CardanocliJs {
     }
     if (!options.httpProvider && typeof window !== "undefined")
       throw new Error("httpProvider required");
+    if (options.httpProvider) {
+      if (typeof window === "undefined") {
+        this.shelleyGenesis = fetch(
+          `${this.httpProvider}/shelleyGenesis`
+        ).json();
+      } else {
+        (() => async () => {
+          this.shelleyGenesis = await fetch(
+            `${this.httpProvider}/shelleyGenesis`
+          ).then((res) => res.json());
+        })();
+      }
+    }
     typeof window !== "undefined" || execSync(`mkdir -p ${this.dir}/tmp`);
   }
 
@@ -904,9 +917,13 @@ class CardanocliJs {
         : response.text();
     }
     let UID = Math.random().toString(36).substr(2, 9);
-    let parsedTx = tryParseJSON(tx)
-      ? fs.writeFileSync(`${this.dir}/tmp/tx_${UID}.signed`, tx)
-      : tx;
+    let parsedTx;
+    if (tryParseJSON(tx)) {
+      fs.writeFileSync(`${this.dir}/tmp/tx_${UID}.signed`, tx);
+      parsedTx = `${this.dir}/tmp/tx_${UID}.signed`;
+    } else {
+      parsedTx = tx;
+    }
     execSync(
       `${this.cliPath} transaction submit --${this.network} --tx-file ${parsedTx}`
     );
