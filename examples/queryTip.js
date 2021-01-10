@@ -10,12 +10,7 @@ const shelleyPath = path.join(
 );
 
 const cardanocliJs = new CardanocliJs({
-  era: "allegra",
-  network: "testnet-magic 1097911063",
-  dir: dir,
-  shelleyGenesisPath: shelleyPath,
-  socketPath: path.join(os.homedir(), "testnet", "db", "socket"),
-  httpProvider: "http://localhost:3000/api/v1",
+  httpProvider: "http://192.168.178.114:3000/api/v1",
 });
 
 console.log(cardanocliJs.queryTip());

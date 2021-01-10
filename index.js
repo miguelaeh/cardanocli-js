@@ -11,6 +11,7 @@ const {
   witnessFilesToString,
   fileException,
   setKeys,
+  tryParseJSON,
 } = require("./helper");
 const fetch =
   typeof window !== "undefined" ? window.fetch : require("sync-fetch");
@@ -45,7 +46,7 @@ class CardanocliJs {
    * @param {path=} options.dir - Default: Working Dir
    * @param {string=} options.era
    * @param {string=} options.network - Default: mainnet
-   * @param {string=} options.httpProvider - Optional - Helpful when using cli at different location than node
+   * @param {string=} options.httpProvider - Optional - Useful when using cli at different location than node or in browser
    */
 
   constructor(options) {
@@ -68,7 +69,8 @@ class CardanocliJs {
       options.cliPath && (this.cliPath = options.cliPath);
       options.httpProvider && (this.httpProvider = options.httpProvider);
     }
-
+    if (!options.httpProvider && typeof window !== "undefined")
+      throw new Error("httpProvider required");
     typeof window !== "undefined" || execSync(`mkdir -p ${this.dir}/tmp`);
   }
 
@@ -78,25 +80,25 @@ class CardanocliJs {
   queryProtocolParameters() {
     if (this.httpProvider) {
       let response = fetch(`${this.httpProvider}/queryProtocolParameters`);
-      if (typeof window !== "undefined") {
+      if (typeof window === "undefined") {
+        response = response.json();
         fs.writeFileSync(
           `${this.dir}/tmp/protocolParams.json`,
           JSON.stringify(response)
         );
         this.protcolParametersPath = `${this.dir}/tmp/protocolParams.json`;
-        return response.json();
+        return response;
       }
-      return response;
-    } else {
-      execSync(`${this.cliPath} query protocol-parameters \
+      return response.then((res) => res.json());
+    }
+    execSync(`${this.cliPath} query protocol-parameters \
                             --${this.network} \
                             --cardano-mode \
                             --out-file ${this.dir}/tmp/protocolParams.json \
                             ${this.era}
                         `);
-      this.protcolParametersPath = `${this.dir}/tmp/protocolParams.json`;
-      return JSON.parse(execSync(`cat ${this.dir}/tmp/protocolParams.json`));
-    }
+    this.protcolParametersPath = `${this.dir}/tmp/protocolParams.json`;
+    return JSON.parse(execSync(`cat ${this.dir}/tmp/protocolParams.json`));
   }
 
   /**
@@ -105,15 +107,16 @@ class CardanocliJs {
   queryTip() {
     if (this.httpProvider) {
       let response = fetch(`${this.httpProvider}/queryTip`);
-      return typeof window !== "undefined" ? response : response.json();
-    } else {
-      return JSON.parse(
-        execSync(`${this.cliPath} query tip \
+      return typeof window !== "undefined"
+        ? response.then((res) => res.json())
+        : response.json();
+    }
+    return JSON.parse(
+      execSync(`${this.cliPath} query tip \
         --${this.network} \
         --cardano-mode
                         `).toString()
-      );
-    }
+    );
   }
 
   /**
@@ -125,16 +128,17 @@ class CardanocliJs {
       let response = fetch(
         `${this.httpProvider}/queryStakeAddressInfo/${address}`
       );
-      return typeof window !== "undefined" ? response : response.json();
-    } else {
-      return JSON.parse(
-        execSync(`${this.cliPath} query stake-address-info \
+      return typeof window !== "undefined"
+        ? response.then((res) => res.json())
+        : response.json();
+    }
+    return JSON.parse(
+      execSync(`${this.cliPath} query stake-address-info \
         --${this.network} \
         --address ${address} \
         ${this.era}
         `).toString()
-      );
-    }
+    );
   }
 
   /**
@@ -144,30 +148,31 @@ class CardanocliJs {
   queryUtxo(address) {
     if (this.httpProvider) {
       let response = fetch(`${this.httpProvider}/queryUtxo/${address}`);
-      return typeof window !== "undefined" ? response : response.json();
-    } else {
-      let utxosRaw = execSync(`${this.cliPath} query utxo \
+      return typeof window !== "undefined"
+        ? response.then((res) => res.json())
+        : response.json();
+    }
+    let utxosRaw = execSync(`${this.cliPath} query utxo \
             --${this.network} \
             --address ${address} \
             --cardano-mode \
             ${this.era}
             `).toString();
 
-      let utxos = utxosRaw.split("\n");
-      utxos.splice(0, 1);
-      utxos.splice(0, 1);
-      utxos.splice(utxos.length - 1, 1);
-      let result = utxos.map((raw, index) => {
-        let utxo = raw.replace(/\s+/g, " ").split(" ");
-        return {
-          txHash: utxo[0],
-          txId: parseInt(utxo[1]),
-          amount: parseInt(utxo[2]),
-        };
-      });
+    let utxos = utxosRaw.split("\n");
+    utxos.splice(0, 1);
+    utxos.splice(0, 1);
+    utxos.splice(utxos.length - 1, 1);
+    let result = utxos.map((raw, index) => {
+      let utxo = raw.replace(/\s+/g, " ").split(" ");
+      return {
+        txHash: utxo[0],
+        txId: parseInt(utxo[1]),
+        amount: parseInt(utxo[2]),
+      };
+    });
 
-      return result;
-    }
+    return result;
   }
 
   /**
@@ -175,10 +180,11 @@ class CardanocliJs {
    * @param {string} account - Name of account
    */
   addressKeyGen(account) {
-    if (this.httpProvider) {
+    if (this.httpProvider && typeof window !== "undefined") {
       let response = fetch(`${this.httpProvider}/${account}/addressKeyGen`);
-      return typeof window !== "undefined" ? response : response.json();
-    } else execSync(`mkdir -p ${this.dir}/priv/wallet/${account}`);
+      return response.then((res) => res.json());
+    }
+    execSync(`mkdir -p ${this.dir}/priv/wallet/${account}`);
     execSync(`${this.cliPath} address key-gen \
                         --verification-key-file ${this.dir}/priv/wallet/${account}/${account}.payment.vkey \
                         --signing-key-file ${this.dir}/priv/wallet/${account}/${account}.payment.skey
@@ -194,22 +200,21 @@ class CardanocliJs {
    * @param {string} account - Name of account
    */
   stakeAddressKeyGen(account) {
-    if (this.httpProvider) {
+    if (this.httpProvider && typeof window !== "undefined") {
       let response = fetch(
         `${this.httpProvider}/${account}/stakeAddressKeyGen`
       );
-      return typeof window !== "undefined" ? response : response.json();
-    } else {
-      execSync(`mkdir -p ${this.dir}/priv/wallet/${account}`);
-      execSync(`${this.cliPath} stake-address key-gen \
+      return response.then((res) => res.json());
+    }
+    execSync(`mkdir -p ${this.dir}/priv/wallet/${account}`);
+    execSync(`${this.cliPath} stake-address key-gen \
                         --verification-key-file ${this.dir}/priv/wallet/${account}/${account}.stake.vkey \
                         --signing-key-file ${this.dir}/priv/wallet/${account}/${account}.stake.skey
                     `);
-      return {
-        vkey: `${this.dir}/priv/wallet/${account}/${account}.stake.vkey`,
-        skey: `${this.dir}/priv/wallet/${account}/${account}.stake.skey`,
-      };
-    }
+    return {
+      vkey: `${this.dir}/priv/wallet/${account}/${account}.stake.vkey`,
+      skey: `${this.dir}/priv/wallet/${account}/${account}.stake.skey`,
+    };
   }
 
   /**
@@ -218,17 +223,16 @@ class CardanocliJs {
    * @returns {path}
    */
   stakeAddressBuild(account) {
-    if (this.httpProvider) {
+    if (this.httpProvider && typeof window !== "undefined") {
       let response = fetch(`${this.httpProvider}/${account}/stakeAddressBuild`);
-      return typeof window !== "undefined" ? response : response.json();
-    } else {
-      execSync(`${this.cliPath} stake-address build \
+      return response.then((res) => res.text());
+    }
+    execSync(`${this.cliPath} stake-address build \
                         --staking-verification-key-file ${this.dir}/priv/wallet/${account}/${account}.stake.vkey \
                         --out-file ${this.dir}/priv/wallet/${account}/${account}.stake.addr \
                         --${this.network}
                     `);
-      return `${this.dir}/priv/wallet/${account}/${account}.stake.addr`;
-    }
+    return `${this.dir}/priv/wallet/${account}/${account}.stake.addr`;
   }
 
   /**
@@ -237,18 +241,17 @@ class CardanocliJs {
    * @returns {path} - Path to the payment address
    */
   addressBuild(account) {
-    if (this.httpProvider) {
+    if (this.httpProvider && typeof window !== "undefined") {
       let response = fetch(`${this.httpProvider}/${account}/addressBuild`);
-      return typeof window !== "undefined" ? response : response.json();
-    } else {
-      execSync(`${this.cliPath} address build \
+      return response.then((res) => res.text());
+    }
+    execSync(`${this.cliPath} address build \
                     --payment-verification-key-file ${this.dir}/priv/wallet/${account}/${account}.payment.vkey \
                     --staking-verification-key-file ${this.dir}/priv/wallet/${account}/${account}.stake.vkey \
                     --out-file ${this.dir}/priv/wallet/${account}/${account}.payment.addr \
                     --${this.network}
                 `);
-      return `${this.dir}/priv/wallet/${account}/${account}.payment.addr`;
-    }
+    return `${this.dir}/priv/wallet/${account}/${account}.payment.addr`;
   }
 
   /**
@@ -256,16 +259,15 @@ class CardanocliJs {
    * @param {string} account - Name of account
    */
   addressKeyHash(account) {
-    if (this.httpProvider) {
+    if (this.httpProvider && typeof window !== "undefined") {
       let response = fetch(`${this.httpProvider}/${account}/addressKeyHash`);
-      return typeof window !== "undefined" ? response : response.json();
-    } else {
-      return execSync(`${this.cliPath} address key-hash \
+      return response.then((res) => res.text());
+    }
+    return execSync(`${this.cliPath} address key-hash \
                         --payment-verification-key-file ${this.dir}/priv/wallet/${account}/${account}.payment.vkey \
                     `)
-        .toString()
-        .replace(/\s+/g, " ");
-    }
+      .toString()
+      .replace(/\s+/g, " ");
   }
 
   /**
@@ -274,18 +276,17 @@ class CardanocliJs {
    * @returns {object}
    */
   addressInfo(address) {
-    if (this.httpProvider) {
+    if (this.httpProvider && typeof window !== "undefined") {
       let response = fetch(`${this.httpProvider}/addressInfo/${address}`);
-      return typeof window !== "undefined" ? response : response.json();
-    } else {
-      return JSON.parse(
-        execSync(`${this.cliPath} address info \
+      return response.then((res) => res.json());
+    }
+    return JSON.parse(
+      execSync(`${this.cliPath} address info \
             --address ${address} \
             `)
-          .toString()
-          .replace(/\s+/g, " ")
-      );
-    }
+        .toString()
+        .replace(/\s+/g, " ")
+    );
   }
 
   /**
@@ -294,29 +295,27 @@ class CardanocliJs {
    * @returns {paymentAddr}
    */
   addressBuildScript(script) {
-    if (this.httpProvider) {
+    if (this.httpProvider && typeof window !== "undefined") {
       let response = fetch(`${this.httpProvider}/addressBuildScript`, {
         headers: {
           "Content-Type": "application/json",
         },
-        mode: "cors",
         method: "POST",
         body: JSON.stringify(script),
       });
-      return typeof window !== "undefined" ? response : response.json();
-    } else {
-      let UID = Math.random().toString(36).substr(2, 9);
-      fs.writeFileSync(
-        `${this.dir}/tmp/script_${UID}.json`,
-        JSON.stringify(script)
-      );
-      let scriptAddr = execSync(
-        `${this.cliPath} address build-script --script-file ${this.dir}/tmp/script_${UID}.json --${this.network}`
-      )
-        .toString()
-        .replace(/\s+/g, " ");
-      return scriptAddr;
+      return response.then((res) => res.text());
     }
+    let UID = Math.random().toString(36).substr(2, 9);
+    fs.writeFileSync(
+      `${this.dir}/tmp/script_${UID}.json`,
+      JSON.stringify(script)
+    );
+    let scriptAddr = execSync(
+      `${this.cliPath} address build-script --script-file ${this.dir}/tmp/script_${UID}.json --${this.network}`
+    )
+      .toString()
+      .replace(/\s+/g, " ");
+    return scriptAddr;
   }
 
   /**
@@ -324,6 +323,10 @@ class CardanocliJs {
    * @param {string} account - Name of the account
    */
   wallet(account) {
+    if (this.httpProvider && typeof window !== "undefined") {
+      let response = fetch(`${this.httpProvider}${account}/wallet`);
+      return response.then((res) => res.json());
+    }
     let paymentAddr = "No payment keys generated";
     let stakingAddr = "No staking keys generated";
 
@@ -381,6 +384,10 @@ class CardanocliJs {
    * @param {string} poolName - Name of the pool
    */
   pool(poolName) {
+    if (this.httpProvider && typeof window !== "undefined") {
+      let response = fetch(`${this.httpProvider}${poolName}/pool`);
+      return response.then((res) => res.json());
+    }
     let id;
     fileException(() => {
       fs.readFileSync(
@@ -407,6 +414,12 @@ class CardanocliJs {
    * @returns {path}
    */
   stakeAddressRegistrationCertificate(account) {
+    if (this.httpProvider && typeof window !== "undefined") {
+      let response = fetch(
+        `${this.httpProvider}${account}/stakeAddressRegistrationCertificate`
+      );
+      return response.then((res) => res.text());
+    }
     execSync(`${this.cliPath} stake-address registration-certificate \
                         --staking-verification-key-file ${this.dir}/priv/wallet/${account}/${account}.stake.vkey \
                         --out-file ${this.dir}/priv/wallet/${account}/${account}.stake.cert
@@ -420,6 +433,12 @@ class CardanocliJs {
    * @returns {path}
    */
   stakeAddressDeregistrationCertificate(account) {
+    if (this.httpProvider && typeof window !== "undefined") {
+      let response = fetch(
+        `${this.httpProvider}${account}/stakeAddressDeregistrationCertificate`
+      );
+      return response.then((res) => res.text());
+    }
     execSync(`${this.cliPath} stake-address deregistration-certificate \
                         --staking-verification-key-file ${this.dir}/priv/wallet/${account}/${account}.stake.vkey \
                         --out-file ${this.dir}/priv/wallet/${account}/${account}.stake.cert
@@ -434,6 +453,12 @@ class CardanocliJs {
    * @returns {path}
    */
   stakeAddressDelegationCertificate(account, poolId) {
+    if (this.httpProvider && typeof window !== "undefined") {
+      let response = fetch(
+        `${this.httpProvider}${account}/stakeAddressDelegationCertificate?poolId=${poolId}`
+      );
+      return response.then((res) => res.text());
+    }
     execSync(`${this.cliPath} stake-address delegation-certificate \
                         --staking-verification-key-file ${this.dir}/priv/wallet/${account}/${account}.stake.vkey \
                         --stake-pool-id ${poolId} \
@@ -448,6 +473,12 @@ class CardanocliJs {
    * @returns {string}
    */
   stakeAddressKeyHash(account) {
+    if (this.httpProvider && typeof window !== "undefined") {
+      let response = fetch(
+        `${this.httpProvider}/${account}/stakeAddressKeyHash`
+      );
+      return response.then((res) => res.text());
+    }
     return execSync(`${this.cliPath} stake-address key-hash \
                         --staking-verification-key-file ${this.dir}/priv/wallet/${account}/${account}.stake.vkey \
                     `)
@@ -460,6 +491,10 @@ class CardanocliJs {
    * @param {string} poolName - Name of the pool
    */
   nodeKeyGenKES(poolName) {
+    if (this.httpProvider && typeof window !== "undefined") {
+      let response = fetch(`${this.httpProvider}/${poolName}/nodeKeyGenKES`);
+      return response.then((res) => res.json());
+    }
     execSync(`mkdir -p ${this.dir}/priv/pool/${poolName}`);
     execSync(`${this.cliPath} node key-gen-KES \
                         --verification-key-file ${this.dir}/priv/pool/${poolName}/${poolName}.kes.vkey \
@@ -476,6 +511,10 @@ class CardanocliJs {
    * @param {string} poolName - Name of the pool
    */
   nodeKeyGen(poolName) {
+    if (this.httpProvider && typeof window !== "undefined") {
+      let response = fetch(`${this.httpProvider}/${poolName}/nodeKeyGen`);
+      return response.then((res) => res.json());
+    }
     execSync(`mkdir -p ${this.dir}/priv/pool/${poolName}`);
     execSync(`${this.cliPath} node key-gen \
                         --cold-verification-key-file ${this.dir}/priv/pool/${poolName}/${poolName}.node.vkey \
@@ -496,6 +535,10 @@ class CardanocliJs {
    * @returns {path}
    */
   nodeIssueOpCert(poolName, kesPeriod) {
+    if (this.httpProvider && typeof window !== "undefined") {
+      let response = fetch(`${this.httpProvider}/${poolName}/nodeIssueOpCert`);
+      return response.then((res) => res.text());
+    }
     execSync(`${this.cliPath} node issue-op-cert \
                         --kes-verification-key-file ${
                           this.dir
@@ -521,6 +564,10 @@ class CardanocliJs {
    * @param {string} poolName - Name of the pool
    */
   nodeKeyGenVRF(poolName) {
+    if (this.httpProvider && typeof window !== "undefined") {
+      let response = fetch(`${this.httpProvider}/${poolName}/nodeKeyGenVRF`);
+      return response.then((res) => res.json());
+    }
     execSync(`mkdir -p ${this.dir}/priv/pool/${poolName}`);
     execSync(`${this.cliPath} node key-gen-VRF \
                         --verification-key-file ${this.dir}/priv/pool/${poolName}/${poolName}.vrf.vkey \
@@ -538,6 +585,10 @@ class CardanocliJs {
    * @returns {string}
    */
   stakePoolId(poolName) {
+    if (this.httpProvider && typeof window !== "undefined") {
+      let response = fetch(`${this.httpProvider}/${poolName}/stakePoolId`);
+      return response.then((res) => res.text());
+    }
     return execSync(
       `${this.cliPath} stake-pool id --cold-verification-key-file ${this.dir}/priv/pool/${poolName}/${poolName}.node.vkey`
     )
@@ -551,6 +602,13 @@ class CardanocliJs {
    * @returns {string}
    */
   stakePoolMetadataHash(metadata) {
+    if (this.httpProvider && typeof window !== "undefined") {
+      let response = fetch(`${this.httpProvider}/stakePoolMetadataHash`, {
+        method: "POST",
+        body: metadata,
+      });
+      return response.then((res) => res.text());
+    }
     fs.writeFileSync(`${this.dir}/tmp/poolmeta.json`, metadata);
     let metaHash = execSync(
       `${this.cliPath} stake-pool metadata-hash --pool-metadata-file ${this.dir}/tmp/poolmeta.json`
@@ -589,9 +647,23 @@ class CardanocliJs {
       )
     )
       throw new Error("All options are required");
+
+    if (this.httpProvider && typeof window !== "undefined") {
+      let response = fetch(
+        `${this.httpProvider}/${poolName}/stakePoolRegistrationCertificate`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          method: "POST",
+          body: JSON.stringify(options),
+        }
+      );
+      return response.then((res) => res.text());
+    }
+
     let owners = ownerToString(options.owners);
     let relays = relayToString(options.relays);
-
     execSync(`${this.cliPath} stake-pool registration-certificate \
                 --cold-verification-key-file ${this.dir}/priv/pool/${poolName}/${poolName}.node.vkey \
                 --vrf-verification-key-file ${this.dir}/priv/pool/${poolName}/${poolName}.vrf.vkey \
@@ -616,6 +688,12 @@ class CardanocliJs {
    * @returns {path}
    */
   stakePoolDeregistrationCertificate(poolName, epoch) {
+    if (this.httpProvider && typeof window !== "undefined") {
+      let response = fetch(
+        `${this.httpProvider}/${poolName}/stakePoolDeregistrationCertificate`
+      );
+      return response.then((res) => res.text());
+    }
     execSync(`${this.cliPath} stake-pool deregistration-certificate \
                 --cold-verification-key-file ${this.dir}/priv/pool/${poolName}/${poolName}.node.vkey \
                 --epoch ${epoch} \
@@ -637,6 +715,16 @@ class CardanocliJs {
   transactionBuildRaw(options) {
     if (!(options && options.txIn && options.txOut))
       throw new Error("TxIn and TxOut required");
+    if (this.httpProvider && typeof window !== "undefined") {
+      let response = fetch(`${this.httpProvider}/transactionBuildRaw`, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+        body: JSON.stringify(options),
+      });
+      return response.then((res) => res.text());
+    }
     let UID = Math.random().toString(36).substr(2, 9);
     let certs = options.certs ? certToString(options.certs) : "";
     let withdrawal = options.withdrawal
@@ -667,6 +755,16 @@ class CardanocliJs {
    * @returns {lovelace}
    */
   transactionCalculateMinFee(options) {
+    if (this.httpProvider && typeof window !== "undefined") {
+      let response = fetch(`${this.httpProvider}/transactionCalculateMinFee`, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+        body: JSON.stringify(options),
+      });
+      return response.then((res) => res.text());
+    }
     this.queryProtocolParameters();
     return parseInt(
       execSync(`${this.cliPath} transaction calculate-min-fee \
@@ -691,6 +789,16 @@ class CardanocliJs {
    * @returns {path}
    */
   transactionSign(options) {
+    if (this.httpProvider && typeof window !== "undefined") {
+      let response = fetch(`${this.httpProvider}/transactionSign`, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+        body: JSON.stringify(options),
+      });
+      return response.then((res) => res.text());
+    }
     let UID = Math.random().toString(36).substr(2, 9);
     let signingKeys = signingKeysToString(options.signingKeys);
     let scriptFile = "";
@@ -698,7 +806,7 @@ class CardanocliJs {
       let UIDScript = Math.random().toString(36).substr(2, 9);
       fs.writeFileSync(
         `${this.dir}/tmp/script_${UIDScript}.json`,
-        JSON.stringify(script)
+        JSON.stringify(scriptFile)
       );
       scriptFile = `--script-file ${this.dir}/tmp/script_${UIDScript}.json`;
     }
@@ -720,13 +828,23 @@ class CardanocliJs {
    * @returns {path}
    */
   transactionWitness(options) {
+    if (this.httpProvider && typeof window !== "undefined") {
+      let response = fetch(`${this.httpProvider}/transactionWitness`, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+        body: JSON.stringify(options),
+      });
+      return response.then((res) => res.text());
+    }
     let UID = Math.random().toString(36).substr(2, 9);
     let scriptFile = "";
     if (options.scriptFile) {
       let UIDScript = Math.random().toString(36).substr(2, 9);
       fs.writeFileSync(
         `${this.dir}/tmp/script_${UIDScript}.json`,
-        JSON.stringify(script)
+        JSON.stringify(scriptFile)
       );
       scriptFile = `--script-file ${this.dir}/tmp/script_${UIDScript}.json`;
     }
@@ -747,6 +865,16 @@ class CardanocliJs {
    * @returns {path}
    */
   transactionAssemble(options) {
+    if (this.httpProvider && typeof window !== "undefined") {
+      let response = fetch(`${this.httpProvider}/transactionAssemble`, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+        body: JSON.stringify(options),
+      });
+      return response.then((res) => res.text());
+    }
     let UID = Math.random().toString(36).substr(2, 9);
     let witnessFiles = witnessFilesToString(options.witnessFiles);
     execSync(`${this.cliPath} transaction assemble \
@@ -758,12 +886,29 @@ class CardanocliJs {
 
   /**
    *
-   * @param {path} tx - Path to signed transaction file
-   * @returns {string} - Transaction hash
+   * @param {path | string} tx - Path or Signed Tx File
+   * @returns {string} - Transaction Hash
    */
   transactionSubmit(tx) {
+    if (this.httpProvider) {
+      let body = tx;
+      if (typeof window === "undefined") {
+        body = fs.readFileSync(tx).toString();
+      }
+      let response = fetch(`${this.httpProvider}/transactionSubmit`, {
+        method: "POST",
+        body,
+      });
+      return typeof window !== "undefined"
+        ? response.then((res) => res.text())
+        : response.text();
+    }
+    let UID = Math.random().toString(36).substr(2, 9);
+    let parsedTx = tryParseJSON(tx)
+      ? fs.writeFileSync(`${this.dir}/tmp/tx_${UID}.signed`, tx)
+      : tx;
     execSync(
-      `${this.cliPath} transaction submit --${this.network} --tx-file ${tx}`
+      `${this.cliPath} transaction submit --${this.network} --tx-file ${parsedTx}`
     );
     return this.transactionTxid({ txFile: tx });
   }
@@ -776,6 +921,18 @@ class CardanocliJs {
    * @returns {path}
    */
   transactionTxid(options) {
+    if (this.httpProvider && typeof window !== "undefined") {
+      let response = fetch(`${this.httpProvider}/transactionTxid`, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+        body: JSON.stringify(options),
+      });
+      return typeof window !== "undefined"
+        ? response.then((res) => res.text())
+        : response.text();
+    }
     let txArg = options.txBody
       ? `--tx-body-file ${options.txBody}`
       : `--tx-file ${options.txFile}`;
@@ -788,6 +945,12 @@ class CardanocliJs {
    * @returns {number}
    */
   KESPeriod() {
+    if (this.httpProvider) {
+      let response = fetch(`${this.httpProvider}/KESPeriod`);
+      return typeof window !== "undefined"
+        ? response.then((res) => parseInt(res.text()))
+        : parseInt(response.text());
+    }
     if (!this.shelleyGenesis) throw new Error("shelleyGenesisPath required");
     return parseInt(
       this.queryTip().slotNo / this.shelleyGenesis.slotsPerKESPeriod
