@@ -14,13 +14,17 @@ const cardanocliJs = new CardanocliJs({
   network: "testnet-magic 1097911063",
   dir: dir,
   shelleyGenesisPath: shelleyPath,
+  socketPath: path.join(os.homedir(), "testnet", "db", "socket"),
+  httpProvider: "http://localhost:3000/api/v1",
 });
 
-const pool = cardanocliJs.pool("BerryJs");
+console.log(cardanocliJs.queryTip());
 
-console.log("Generating new KES keys and Node Operational certificate");
-let kes = cardanocliJs.nodeKeyGenKES(pool.name);
-let op = cardanocliJs.nodeIssueOpCert(pool.name);
+// const pool = cardanocliJs.pool("BerryJs");
 
-console.log(kes);
-console.log(op);
+// console.log("Generating new KES keys and Node Operational certificate");
+// let kes = cardanocliJs.nodeKeyGenKES(pool.name);
+// let op = cardanocliJs.nodeIssueOpCert(pool.name);
+
+// console.log(kes);
+// console.log(op);
