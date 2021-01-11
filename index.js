@@ -904,30 +904,35 @@ class CardanocliJs {
    */
   transactionSubmit(tx) {
     if (this.httpProvider) {
-      let body = tx;
       if (typeof window === "undefined") {
-        body = fs.readFileSync(tx).toString();
+        let body = fs.readFileSync(tx).toString();
+        return fetch(`${this.httpProvider}/transactionSubmit`, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          method: "POST",
+          body: body,
+        }).text();
+      } else {
+        return fetch(
+          `${this.httpProvider}/transactionSubmit?filePath=${tx}`
+        ).response.then((res) => res.text());
       }
-      let response = fetch(`${this.httpProvider}/transactionSubmit`, {
-        method: "POST",
-        body,
-      });
-      return typeof window !== "undefined"
-        ? response.then((res) => res.text())
-        : response.text();
     }
     let UID = Math.random().toString(36).substr(2, 9);
     let parsedTx;
-    if (tryParseJSON(tx)) {
-      fs.writeFileSync(`${this.dir}/tmp/tx_${UID}.signed`, tx);
+
+    if (typeof tx == "object") {
+      fs.writeFileSync(`${this.dir}/tmp/tx_${UID}.signed`, JSON.stringify(tx));
       parsedTx = `${this.dir}/tmp/tx_${UID}.signed`;
     } else {
       parsedTx = tx;
     }
+    console.log(parsedTx);
     execSync(
       `${this.cliPath} transaction submit --${this.network} --tx-file ${parsedTx}`
     );
-    return this.transactionTxid({ txFile: tx });
+    return this.transactionTxid({ txFile: parsedTx });
   }
 
   /**
@@ -975,11 +980,13 @@ class CardanocliJs {
   }
 
   getDownloadUrl(filePath) {
-    if (!(this.httpProvider && typeof window !== "undefined"))
-      throw new Error("No httpProvider added or no in Browser");
-    return fetch(
+    if (!this.httpProvider) throw new Error("No httpProvider");
+    let response = fetch(
       `${this.httpProvider}/getDownloadUrl?filePath=${filePath}`
-    ).then((res) => res.text());
+    );
+    return typeof window !== "undefined"
+      ? response.then((res) => res.text())
+      : response.text();
   }
 
   /**
