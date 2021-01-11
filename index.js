@@ -974,6 +974,14 @@ class CardanocliJs {
     );
   }
 
+  getDownloadUrl(filePath) {
+    if (!(this.httpProvider && typeof window !== "undefined"))
+      throw new Error("No httpProvider added or no in Browser");
+    return fetch(
+      `${this.httpProvider}/getDownloadUrl?filePath=${filePath}`
+    ).then((res) => res.text());
+  }
+
   /**
    *
    * @param {number} ada
