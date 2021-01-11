@@ -979,6 +979,11 @@ class CardanocliJs {
     );
   }
 
+  /**
+   *
+   * @param {path} filePath
+   * @returns {path} - Download link for the file
+   */
   getDownloadUrl(filePath) {
     if (!this.httpProvider) throw new Error("No httpProvider");
     let response = fetch(
