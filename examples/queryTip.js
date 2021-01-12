@@ -5,12 +5,19 @@ const path = require("path");
 const dir = path.join(os.homedir(), "testnet");
 const shelleyPath = path.join(
   os.homedir(),
-  "testnet",
-  "testnet-shelley-genesis.json"
+  "launchpad",
+  "launchpad-shelley-genesis.json"
 );
 
 const cardanocliJs = new CardanocliJs({
-  httpProvider: "http://192.168.178.33:3000/api/v1", //fetching node information from different location
+  era: "allegra",
+  network: "testnet-magic 1097911063",
+  dir: dir,
+  shelleyGenesisPath: shelleyPath,
+  socketPath: path.join(os.homedir(), "testnet", "db", "socket"),
 });
 
 console.log(cardanocliJs.queryTip());
+
+let wallet = cardanocliJs.wallet("Ales");
+console.log(wallet.balance().amount);

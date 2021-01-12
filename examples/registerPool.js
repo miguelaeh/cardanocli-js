@@ -39,7 +39,7 @@ const registerPool = (pool, wallet, data) => {
     txOut: [
       {
         address: wallet.paymentAddr,
-        amount: wallet.balance().amount - poolDeposit,
+        amount: wallet.balance().amount.lovelace - poolDeposit,
       },
     ],
     witnessCount: 3,
@@ -50,7 +50,7 @@ const registerPool = (pool, wallet, data) => {
     ...tx,
     txBody: txBodyRaw,
   });
-  tx.txOut[0].amount -= fee;
+  tx.txOut[0].amount.lovelace -= fee;
   let txBody = cardanocliJs.transactionBuildRaw({ ...tx, fee });
   let txSigned = cardanocliJs.transactionSign({
     txBody,

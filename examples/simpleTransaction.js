@@ -32,7 +32,7 @@ let txInfo = {
   txOut: [
     {
       address: sender.paymentAddr,
-      amount: sender.balance().amount - cardanocliJs.toLovelace(5),
+      amount: sender.balance().amount.lovelace - cardanocliJs.toLovelace(5),
     }, //amount going back to sender
     { address: receiver, amount: cardanocliJs.toLovelace(5) }, //amount going to receiver
   ],
@@ -47,7 +47,7 @@ let fee = cardanocliJs.transactionCalculateMinFee({
 });
 
 //pay the fee by subtracting it from the sender utxo
-txInfo.txOut[0].amount -= fee;
+txInfo.txOut[0].amount.lovelace -= fee;
 
 //create final transaction
 let tx = cardanocliJs.transactionBuildRaw({ ...txInfo, fee });

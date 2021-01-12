@@ -40,9 +40,14 @@ exports.txInToString = (txInList) => {
 
 exports.txOutToString = (txOutList) => {
   let result = "";
-  txOutList.forEach(
-    (txOut) => (result += `--tx-out ${txOut.address}+${txOut.amount} `)
-  );
+  txOutList.forEach((txOut) => {
+    result += `--tx-out "${txOut.address}+${txOut.amount.lovelace}`;
+    Object.keys(txOut.amount).forEach((currency) => {
+      if (currency == "lovelace") return;
+      result += `+${txOut.amount[currency]} ${currency}`;
+    });
+    result += `" `;
+  });
   return result;
 };
 
@@ -107,4 +112,29 @@ exports.fileExists = (files) => {
         `File ${file} already exists. Remove it manually if you want to create a new file.`
       );
   }
+};
+
+exports.mintToString = (mintList) => {
+  let result = `--mint="`;
+  mintList.forEach((mint, index, arr) => {
+    if (
+      !(
+        (mint.amount || mint.token) &&
+        (mint.action == "mint" || mint.action == "burn")
+      )
+    )
+      throw new Error("action, amount and token property required");
+    if (Object.is(arr.length - 1, index)) {
+      result += `${mint.action == "mint" ? "" : "-"}${mint.amount} ${
+        mint.token
+      }`;
+    } else {
+      result += `${mint.action == "mint" ? "" : "-"}${mint.amount} ${
+        mint.token
+      }+`;
+    }
+  });
+  result = result.trim();
+  result += `" `;
+  return result;
 };
