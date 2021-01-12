@@ -10,16 +10,7 @@ const shelleyPath = path.join(
 );
 
 const cardanocliJs = new CardanocliJs({
-  httpProvider: "http://192.168.178.114:3000/api/v1",
+  httpProvider: "http://192.168.178.33:3000/api/v1", //fetching node information from different location
 });
 
 console.log(cardanocliJs.queryTip());
-
-// const pool = cardanocliJs.pool("BerryJs");
-
-// console.log("Generating new KES keys and Node Operational certificate");
-// let kes = cardanocliJs.nodeKeyGenKES(pool.name);
-// let op = cardanocliJs.nodeIssueOpCert(pool.name);
-
-// console.log(kes);
-// console.log(op);

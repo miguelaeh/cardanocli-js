@@ -11,7 +11,7 @@ const {
   witnessFilesToString,
   fileException,
   setKeys,
-  tryParseJSON,
+  fileExists,
 } = require("./helper");
 const fetch =
   typeof window !== "undefined" ? window.fetch : require("sync-fetch");
@@ -198,14 +198,17 @@ class CardanocliJs {
       let response = fetch(`${this.httpProvider}/${account}/addressKeyGen`);
       return response.then((res) => res.json());
     }
+    let vkey = `${this.dir}/priv/wallet/${account}/${account}.payment.vkey`;
+    let skey = `${this.dir}/priv/wallet/${account}/${account}.payment.skey`;
+    fileExists([vkey, skey]);
     execSync(`mkdir -p ${this.dir}/priv/wallet/${account}`);
     execSync(`${this.cliPath} address key-gen \
-                        --verification-key-file ${this.dir}/priv/wallet/${account}/${account}.payment.vkey \
-                        --signing-key-file ${this.dir}/priv/wallet/${account}/${account}.payment.skey
+                        --verification-key-file ${vkey} \
+                        --signing-key-file ${skey}
                     `);
     return {
-      vkey: `${this.dir}/priv/wallet/${account}/${account}.payment.vkey`,
-      skey: `${this.dir}/priv/wallet/${account}/${account}.payment.skey`,
+      vkey,
+      skey,
     };
   }
 
@@ -220,14 +223,17 @@ class CardanocliJs {
       );
       return response.then((res) => res.json());
     }
+    let vkey = `${this.dir}/priv/wallet/${account}/${account}.stake.vkey`;
+    let skey = `${this.dir}/priv/wallet/${account}/${account}.stake.skey`;
+    fileExists([vkey, skey]);
     execSync(`mkdir -p ${this.dir}/priv/wallet/${account}`);
     execSync(`${this.cliPath} stake-address key-gen \
-                        --verification-key-file ${this.dir}/priv/wallet/${account}/${account}.stake.vkey \
-                        --signing-key-file ${this.dir}/priv/wallet/${account}/${account}.stake.skey
+                        --verification-key-file ${vkey} \
+                        --signing-key-file ${skey}
                     `);
     return {
-      vkey: `${this.dir}/priv/wallet/${account}/${account}.stake.vkey`,
-      skey: `${this.dir}/priv/wallet/${account}/${account}.stake.skey`,
+      vkey,
+      skey,
     };
   }
 
@@ -509,14 +515,17 @@ class CardanocliJs {
       let response = fetch(`${this.httpProvider}/${poolName}/nodeKeyGenKES`);
       return response.then((res) => res.json());
     }
+    let vkey = `${this.dir}/priv/pool/${poolName}/${poolName}.kes.vkey`;
+    let skey = `${this.dir}/priv/pool/${poolName}/${poolName}.kes.skey`;
+    fileExists([vkey, skey]);
     execSync(`mkdir -p ${this.dir}/priv/pool/${poolName}`);
     execSync(`${this.cliPath} node key-gen-KES \
-                        --verification-key-file ${this.dir}/priv/pool/${poolName}/${poolName}.kes.vkey \
-                        --signing-key-file ${this.dir}/priv/pool/${poolName}/${poolName}.kes.skey
+                        --verification-key-file ${vkey} \
+                        --signing-key-file ${skey}
                     `);
     return {
-      vkey: `${this.dir}/priv/pool/${poolName}/${poolName}.kes.vkey`,
-      skey: `${this.dir}/priv/pool/${poolName}/${poolName}.kes.skey`,
+      vkey,
+      skey,
     };
   }
 
@@ -529,16 +538,20 @@ class CardanocliJs {
       let response = fetch(`${this.httpProvider}/${poolName}/nodeKeyGen`);
       return response.then((res) => res.json());
     }
+    let vkey = `${this.dir}/priv/pool/${poolName}/${poolName}.node.vkey`;
+    let skey = `${this.dir}/priv/pool/${poolName}/${poolName}.node.skey`;
+    let counter = `${this.dir}/priv/pool/${poolName}/${poolName}.node.counter`;
+    fileExists([vkey, skey, counter]);
     execSync(`mkdir -p ${this.dir}/priv/pool/${poolName}`);
     execSync(`${this.cliPath} node key-gen \
-                        --cold-verification-key-file ${this.dir}/priv/pool/${poolName}/${poolName}.node.vkey \
-                        --cold-signing-key-file ${this.dir}/priv/pool/${poolName}/${poolName}.node.skey \
-                        --operational-certificate-issue-counter ${this.dir}/priv/pool/${poolName}/${poolName}.node.counter 
+                        --cold-verification-key-file ${vkey} \
+                        --cold-signing-key-file ${skey} \
+                        --operational-certificate-issue-counter ${counter}
                     `);
     return {
-      vkey: `${this.dir}/priv/pool/${poolName}/${poolName}.node.vkey`,
-      skey: `${this.dir}/priv/pool/${poolName}/${poolName}.node.skey`,
-      counter: `${this.dir}/priv/pool/${poolName}/${poolName}.node.counter`,
+      vkey,
+      skey,
+      counter,
     };
   }
 
@@ -582,14 +595,17 @@ class CardanocliJs {
       let response = fetch(`${this.httpProvider}/${poolName}/nodeKeyGenVRF`);
       return response.then((res) => res.json());
     }
+    let vkey = `${this.dir}/priv/pool/${poolName}/${poolName}.vrf.vkey`;
+    let skey = `${this.dir}/priv/pool/${poolName}/${poolName}.vrf.skey`;
+    fileExists([vkey, skey]);
     execSync(`mkdir -p ${this.dir}/priv/pool/${poolName}`);
     execSync(`${this.cliPath} node key-gen-VRF \
-                        --verification-key-file ${this.dir}/priv/pool/${poolName}/${poolName}.vrf.vkey \
-                        --signing-key-file ${this.dir}/priv/pool/${poolName}/${poolName}.vrf.skey
+                        --verification-key-file ${vkey} \
+                        --signing-key-file ${skey}
                     `);
     return {
-      vkey: `${this.dir}/priv/pool/${poolName}/${poolName}.vrf.vkey`,
-      skey: `${this.dir}/priv/pool/${poolName}/${poolName}.vrf.skey`,
+      vkey,
+      skey,
     };
   }
 

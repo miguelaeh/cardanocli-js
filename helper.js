@@ -1,3 +1,5 @@
+const fs = require("fs");
+
 exports.ownerToString = (ownerList) => {
   let result = "";
   ownerList.forEach(
@@ -92,4 +94,17 @@ exports.tryParseJSON = (jsonString) => {
   } catch (e) {}
 
   return false;
+};
+
+exports.fileExists = (files) => {
+  for (file of files) {
+    let exists;
+    this.fileException(() => {
+      exists = fs.readFileSync(file);
+    });
+    if (exists)
+      throw new Error(
+        `File ${file} already exists. Remove it manually if you want to create a new file.`
+      );
+  }
 };
