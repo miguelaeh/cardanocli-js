@@ -99,7 +99,7 @@ class CardanocliJs {
           `${this.dir}/tmp/protocolParams.json`,
           JSON.stringify(response)
         );
-        this.protcolParametersPath = `${this.dir}/tmp/protocolParams.json`;
+        this.protocolParametersPath = `${this.dir}/tmp/protocolParams.json`;
         return response;
       }
       return response.then((res) => res.json());
@@ -110,7 +110,7 @@ class CardanocliJs {
                             --out-file ${this.dir}/tmp/protocolParams.json \
                             ${this.era}
                         `);
-    this.protcolParametersPath = `${this.dir}/tmp/protocolParams.json`;
+    this.protocolParametersPath = `${this.dir}/tmp/protocolParams.json`;
     return JSON.parse(execSync(`cat ${this.dir}/tmp/protocolParams.json`));
   }
 
@@ -786,7 +786,7 @@ class CardanocliJs {
                 --tx-out-count ${options.txOut.length} \
                 --mainnet \
                 --witness-count ${options.witnessCount} \
-                --protocol-params-file ${this.protcolParametersPath}`)
+                --protocol-params-file ${this.protocolParametersPath}`)
         .toString()
         .replace(/\s+/g, " ")
         .split(" ")[0]
