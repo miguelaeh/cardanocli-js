@@ -68,22 +68,23 @@ class CardanocliJs {
       options.dir && (this.dir = options.dir);
       options.cliPath && (this.cliPath = options.cliPath);
       options.httpProvider && (this.httpProvider = options.httpProvider);
-    }
-    if (!options.httpProvider && typeof window !== "undefined")
-      throw new Error("httpProvider required");
-    if (options.httpProvider) {
-      if (typeof window === "undefined") {
-        this.shelleyGenesis = fetch(
-          `${this.httpProvider}/shelleyGenesis`
-        ).json();
-      } else {
-        (() => async () => {
-          this.shelleyGenesis = await fetch(
+      if (!this.httpProvider && typeof window !== "undefined")
+        throw new Error("httpProvider required");
+      if (this.httpProvider) {
+        if (typeof window === "undefined") {
+          this.shelleyGenesis = fetch(
             `${this.httpProvider}/shelleyGenesis`
-          ).then((res) => res.json());
-        })();
+          ).json();
+        } else {
+          (() => async () => {
+            this.shelleyGenesis = await fetch(
+              `${this.httpProvider}/shelleyGenesis`
+            ).then((res) => res.json());
+          })();
+        }
       }
     }
+
     typeof window !== "undefined" || execSync(`mkdir -p ${this.dir}/tmp`);
   }
 
