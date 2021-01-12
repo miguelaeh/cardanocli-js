@@ -9,12 +9,14 @@ exports.ownerToString = (ownerList) => {
 exports.relayToString = (relayList) => {
   let result = "";
   relayList.forEach((relay) => {
-    if (!((relay.host || relay.ip) && relay.port))
+    if (!((relay.host || relay.ip) && relay.port) && !relay.multiHost)
       throw new Error("Relay is missing arguments");
     if (relay.host) {
       result += `--single-host-pool-relay ${relay.host} --pool-relay-port ${relay.port} `;
     } else if (relay.ip) {
       result += `--pool-relay-ipv4 ${relay.ip} --pool-relay-port ${relay.port} `;
+    } else if (relay.multiHost) {
+      result += `--multi-host-pool-relay ${relay.multiHost} `;
     }
   });
   return result;
