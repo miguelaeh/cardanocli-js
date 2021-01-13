@@ -39,7 +39,7 @@ const registerPool = (pool, wallet, data) => {
     txOut: [
       {
         address: wallet.paymentAddr,
-        amount: wallet.balance().amount.lovelace - poolDeposit,
+        amount: { lovelace: wallet.balance().amount.lovelace - poolDeposit },
       },
     ],
     witnessCount: 3,

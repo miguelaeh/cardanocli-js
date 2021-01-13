@@ -32,7 +32,9 @@ const registerWallet = (wallet) => {
   let balance = cardanocliJs.wallet(account).balance().amount.lovelace;
   let tx = {
     txIn: cardanocliJs.queryUtxo(paymentAddress),
-    txOut: [{ address: paymentAddress, amount: balance - keyDeposit }],
+    txOut: [
+      { address: paymentAddress, amount: { lovelace: balance - keyDeposit } },
+    ],
     certs: [stakeCert],
     witnessCount: 2,
   };
