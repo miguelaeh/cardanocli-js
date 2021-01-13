@@ -14,12 +14,15 @@ const cardanocliJs = new CardanocliJs({
   network: "testnet-magic 1097911063",
   dir: dir,
   shelleyGenesisPath: shelleyPath,
+  socketPath: path.join(os.homedir(), "testnet", "db", "socket"),
 });
 
 //funded wallet
 const sender = cardanocliJs.wallet("Ales");
 console.log(
-  "Balance of Sender wallet: " + cardanocliJs.toAda(sender.balance) + " ADA"
+  "Balance of Sender wallet: " +
+    cardanocliJs.toAda(sender.balance().amount.lovelace) +
+    " ADA"
 );
 
 //receiver address
@@ -38,6 +41,7 @@ let txInfo = {
     }, //amount going back to sender
     { address: receiver, amount: { lovelace: cardanocliJs.toLovelace(5) } }, //amount going to receiver
   ],
+  metadata: { 1: { cardanocliJs: "First Metadata from cardanocli-js" } },
 };
 let raw = cardanocliJs.transactionBuildRaw(txInfo);
 

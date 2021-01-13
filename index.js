@@ -758,6 +758,8 @@ class CardanocliJs {
    * @param {Array<path>=} options.certs
    * @param {lovelace=} options.fee
    * @param {Array<object>} options.mint
+   * @param {object=} options.script
+   * @param {object=} options.metadata
    * @returns {path}
    */
   transactionBuildRaw(options) {
@@ -773,6 +775,24 @@ class CardanocliJs {
       });
       return response.then((res) => res.text());
     }
+    let scriptFile = "";
+    if (options.script) {
+      let scriptUID = Math.random().toString(36).substr(2, 9);
+      fs.writeFileSync(
+        `${this.dir}/tmp/script_${scriptUID}.json`,
+        JSON.stringify(options.script)
+      );
+      scriptFile = `--script-file ${this.dir}/tmp/script_${scriptUID}.json`;
+    }
+    let metadataFile = "";
+    if (options.metadata) {
+      let metatUID = Math.random().toString(36).substr(2, 9);
+      fs.writeFileSync(
+        `${this.dir}/tmp/metadata_${metatUID}.json`,
+        JSON.stringify(options.metadata)
+      );
+      metadataFile = `--metadata-json-file ${this.dir}/tmp/metadata_${metatUID}.json`;
+    }
     let UID = Math.random().toString(36).substr(2, 9);
     let certs = options.certs ? certToString(options.certs) : "";
     let withdrawal = options.withdrawal
@@ -787,6 +807,8 @@ class CardanocliJs {
                 ${certs} \
                 ${withdrawal} \
                 ${mintString} \
+                ${scriptFile} \
+                ${metadataFile} \
                 --invalid-hereafter ${this.queryTip().slotNo + 10000} \
                 --fee ${options.fee ? options.fee : 0} \
                 --out-file ${this.dir}/tmp/tx_${UID}.raw \
@@ -836,6 +858,16 @@ class CardanocliJs {
    * @returns {string} - Policy Id
    */
   transactionPolicyid(script) {
+    if (this.httpProvider && typeof window !== "undefined") {
+      let response = fetch(`${this.httpProvider}/transactionPolicyid`, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+        body: JSON.stringify(script),
+      });
+      return response.then((res) => res.text());
+    }
     let UID = Math.random().toString(36).substr(2, 9);
     fs.writeFileSync(
       `${this.dir}/tmp/script_${UID}.json`,
