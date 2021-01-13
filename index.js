@@ -626,6 +626,23 @@ class CardanocliJs {
     };
   }
 
+  nodeNewCounter(poolName, counter) {
+    if (this.httpProvider && typeof window !== "undefined") {
+      let response = fetch(
+        `${this.httpProvider}/${poolName}/nodeNewCounter?counter=${counter}`
+      );
+      return response.then((res) => res.text());
+    }
+
+    execSync(`mkdir -p ${this.dir}/priv/pool/${poolName}`);
+    execSync(`${this.cliPath} node new-counter \
+                        --cold-verification-key-file ${this.dir}/priv/pool/${poolName}/${poolName}.node.vkey \
+                        --counter-value ${counter} \
+                        --operational-certificate-issue-counter-file ${this.dir}/priv/pool/${poolName}/${poolName}.node.counter
+                    `);
+    return `${this.dir}/priv/pool/${poolName}/${poolName}.node.counter`;
+  }
+
   /**
    *
    * @param {string} poolName - Name of the pool
