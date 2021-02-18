@@ -777,8 +777,8 @@ class CardanocliJs {
    * @param {Array<object>} options.mint
    * @param {object=} options.script
    * @param {object=} options.metadata
-   * @param {number=} options.invalidBefore
-   * @param {number=} options.invalidAfter
+   * @param {number=} options.invalidBefore - Default: 0
+   * @param {number=} options.invalidAfter - Default: 10000
    * @returns {path}
    */
   transactionBuildRaw(options) {
