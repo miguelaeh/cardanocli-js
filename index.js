@@ -777,6 +777,8 @@ class CardanocliJs {
    * @param {Array<object>} options.mint
    * @param {object=} options.script
    * @param {object=} options.metadata
+   * @param {number=} options.invalidBefore
+   * @param {number=} options.invalidAfter
    * @returns {path}
    */
   transactionBuildRaw(options) {
@@ -826,7 +828,14 @@ class CardanocliJs {
                 ${mintString} \
                 ${scriptFile} \
                 ${metadataFile} \
-                --invalid-hereafter ${this.queryTip().slotNo + 10000} \
+                --invalid-hereafter ${
+                  options.invalidAfter
+                    ? options.invalidAfter
+                    : this.queryTip().slotNo + 10000
+                } \
+                --invalid-before ${
+                  options.invalidBefore ? options.invalidBefore : 0
+                } \
                 --fee ${options.fee ? options.fee : 0} \
                 --out-file ${this.dir}/tmp/tx_${UID}.raw \
                 ${this.era}`);
