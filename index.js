@@ -1029,7 +1029,7 @@ class CardanocliJs {
       } else {
         return fetch(
           `${this.httpProvider}/transactionSubmit?filePath=${tx}`
-        ).response.then((res) => res.text());
+        ).then((res) => res.text());
       }
     }
     let UID = Math.random().toString(36).substr(2, 9);
