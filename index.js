@@ -1087,7 +1087,7 @@ class CardanocliJs {
     }
     if (!this.shelleyGenesis) throw new Error("shelleyGenesisPath required");
     return parseInt(
-      this.queryTip().slotNo / this.shelleyGenesis.slotsPerKESPeriod
+      this.queryTip().slot / this.shelleyGenesis.slotsPerKESPeriod
     );
   }
 

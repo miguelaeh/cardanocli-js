@@ -10,7 +10,6 @@ const shelleyPath = path.join(
 );
 
 const cardanocliJs = new CardanocliJs({
-  era: "allegra",
   network: "testnet-magic 1097911063",
   dir: dir,
   shelleyGenesisPath: shelleyPath,
