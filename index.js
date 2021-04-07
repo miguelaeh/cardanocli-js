@@ -831,7 +831,7 @@ class CardanocliJs {
                 --invalid-hereafter ${
                   options.invalidAfter
                     ? options.invalidAfter
-                    : this.queryTip().slotNo + 10000
+                    : this.queryTip().slot + 10000
                 } \
                 --invalid-before ${
                   options.invalidBefore ? options.invalidBefore : 0
