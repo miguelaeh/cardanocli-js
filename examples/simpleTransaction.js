@@ -20,7 +20,7 @@ const cardanocliJs = new CardanocliJs({
 const sender = cardanocliJs.wallet("Ales");
 console.log(
   "Balance of Sender wallet: " +
-    cardanocliJs.toAda(sender.balance().amount.lovelace) +
+    cardanocliJs.toAda(sender.balance().value.lovelace) +
     " ADA"
 );
 
@@ -34,11 +34,11 @@ let txInfo = {
   txOut: [
     {
       address: sender.paymentAddr,
-      amount: {
-        lovelace: sender.balance().amount.lovelace - cardanocliJs.toLovelace(5),
+      value: {
+        lovelace: sender.balance().value.lovelace - cardanocliJs.toLovelace(5),
       },
-    }, //amount going back to sender
-    { address: receiver, amount: { lovelace: cardanocliJs.toLovelace(5) } }, //amount going to receiver
+    }, //value going back to sender
+    { address: receiver, value: { lovelace: cardanocliJs.toLovelace(5) } }, //value going to receiver
   ],
   metadata: { 1: { cardanocliJs: "First Metadata from cardanocli-js" } },
 };
@@ -52,7 +52,7 @@ let fee = cardanocliJs.transactionCalculateMinFee({
 });
 
 //pay the fee by subtracting it from the sender utxo
-txInfo.txOut[0].amount.lovelace -= fee;
+txInfo.txOut[0].value.lovelace -= fee;
 
 //create final transaction
 let tx = cardanocliJs.transactionBuildRaw({ ...txInfo, fee });

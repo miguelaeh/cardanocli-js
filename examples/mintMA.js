@@ -21,39 +21,42 @@ const createTransaction = (tx) => {
     ...tx,
     txBody: raw,
   });
-  tx.txOut[0].amount.lovelace -= fee;
+  tx.txOut[0].value.lovelace -= fee;
   return cardanocliJs.transactionBuildRaw({ ...tx, fee });
 };
 
 const signTransaction = (wallet, tx, script) => {
   return cardanocliJs.transactionSign({
     signingKeys: [wallet.payment.skey, wallet.payment.skey],
-    scriptFile: script,
     txBody: tx,
   });
 };
 
-let wallet = cardanocliJs.wallet("Berry");
-let mintScript = {
+const wallet = cardanocliJs.wallet("Berry");
+const mintScript = {
   keyHash: cardanocliJs.addressKeyHash(wallet.name),
   type: "sig",
 };
-let policy = cardanocliJs.transactionPolicyid(mintScript);
+const policy = cardanocliJs.transactionPolicyid(mintScript);
 const BERRYCOIN = policy + ".Berrycoin";
 
-let tx = {
+const tx = {
   txIn: wallet.balance().utxo,
   txOut: [
     {
       address: wallet.paymentAddr,
-      amount: { ...wallet.balance().amount, [BERRYCOIN]: 100 },
+      value: { ...wallet.balance().value, [BERRYCOIN]: 100 },
     },
   ],
-  mint: [{ action: "mint", amount: 100, token: BERRYCOIN }],
+  mint: {
+    action: [{ type: "mint", quantity: 100, asset: BERRYCOIN }],
+    script: [mintScript],
+  },
   witnessCount: 2,
 };
 
-let raw = createTransaction(tx);
-let signed = signTransaction(wallet, raw, mintScript);
-let txHash = cardanocliJs.transactionSubmit(signed);
+const raw = createTransaction(tx);
+const signed = signTransaction(wallet, raw);
+console.log(cardanocliJs.transactionView({ txFile: signed }));
+const txHash = cardanocliJs.transactionSubmit(signed);
 console.log(txHash);

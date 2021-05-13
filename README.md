@@ -10,7 +10,7 @@ This is a library, which wraps the cardano-cli with JavaScript and makes it poss
 
 ## Prerequisites
 
-- `cardano-node >= 1.26.1`
+- `cardano-node >= 1.27.0`
 - `node.js >= 12.19.0`
 
 ## Install
@@ -38,10 +38,13 @@ const shelleyGenesisPath = "/home/ada/mainnet-shelley-genesis.json";
 const cardanocliJs = new CardanocliJs({ shelleyGenesisPath });
 
 const createWallet = (account) => {
-  cardanocliJs.addressKeyGen(account);
-  cardanocliJs.stakeAddressKeyGen(account);
+  const payment = cardanocliJs.addressKeyGen(account);
+  const stake = cardanocliJs.stakeAddressKeyGen(account);
   cardanocliJs.stakeAddressBuild(account);
-  cardanocliJs.addressBuild(account);
+  cardanocliJs.addressBuild(account, {
+    paymentVkey: payment.vkey,
+    stakeVkey: stake.vkey,
+  });
   return cardanocliJs.wallet(account);
 };
 

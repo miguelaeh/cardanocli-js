@@ -15,12 +15,15 @@ const cardanocliJs = new CardanocliJs({
   shelleyGenesisPath: shelleyPath,
 });
 
-const createWallet = (accout) => {
-  cardanocliJs.addressKeyGen(accout);
-  cardanocliJs.stakeAddressKeyGen(accout);
-  cardanocliJs.stakeAddressBuild(accout);
-  cardanocliJs.addressBuild(accout);
-  return cardanocliJs.wallet(accout);
+const createWallet = (account) => {
+  const payment = cardanocliJs.addressKeyGen(account);
+  const stake = cardanocliJs.stakeAddressKeyGen(account);
+  cardanocliJs.stakeAddressBuild(account);
+  cardanocliJs.addressBuild(account, {
+    paymentVkey: payment.vkey,
+    stakeVkey: stake.vkey,
+  });
+  return cardanocliJs.wallet(account);
 };
 
 const registerWallet = (wallet) => {
@@ -28,13 +31,13 @@ const registerWallet = (wallet) => {
   let keyDeposit = cardanocliJs.queryProtocolParameters().keyDeposit;
   let stakeCert = cardanocliJs.stakeAddressRegistrationCertificate(account);
   let paymentAddress = cardanocliJs.wallet(account).paymentAddr;
-  let balance = cardanocliJs.wallet(account).balance().amount.lovelace;
+  let balance = cardanocliJs.wallet(account).balance().value.lovelace;
   let tx = {
     txIn: cardanocliJs.queryUtxo(paymentAddress),
     txOut: [
-      { address: paymentAddress, amount: { lovelace: balance - keyDeposit } },
+      { address: paymentAddress, value: { lovelace: balance - keyDeposit } },
     ],
-    certs: [stakeCert],
+    certs: [{ cert: stakeCert }],
     witnessCount: 2,
   };
   let txBodyRaw = cardanocliJs.transactionBuildRaw(tx);
@@ -42,7 +45,7 @@ const registerWallet = (wallet) => {
     ...tx,
     txBody: txBodyRaw,
   });
-  tx.txOut[0].amount.lovelace -= fee;
+  tx.txOut[0].value.lovelace -= fee;
   let txBody = cardanocliJs.transactionBuildRaw({ ...tx, fee });
   let txSigned = cardanocliJs.transactionSign({
     txBody,

@@ -24,16 +24,58 @@ exports.relayToString = (relayList) => {
   return result;
 };
 
-exports.certToString = (certList) => {
+exports.certToString = (dir, certList) => {
   let result = "";
-  certList.forEach((cert) => (result += `--certificate-file ${cert} `));
+  certList.forEach(
+    (cert) =>
+      (result += `--certificate ${cert.cert} ${
+        cert.script
+          ? `--certificate-script-file ${this.jsonToPath(dir, cert.script)} `
+          : ""
+      }`)
+  );
   return result;
 };
 
-exports.txInToString = (txInList) => {
+exports.withdrawalToString = (dir, withdrawalList) => {
+  let result = "";
+  withdrawalList.forEach(
+    (withdrawal) =>
+      (result += `--withdrawal ${withdrawal.stakingAddress}+${
+        withdrawal.reward
+      } ${
+        withdrawal.script
+          ? `--withdrawal-script-file ${this.jsonToPath(
+              dir,
+              withdrawal.script
+            )} `
+          : ""
+      }`)
+  );
+  return result;
+};
+
+exports.auxScriptToString = (dir, scriptList) => {
+  return scriptList
+    .map((script) => `--auxiliary-script-file ${this.jsonToPath(dir, script)}`)
+    .join(" ");
+};
+
+exports.jsonToPath = (dir, json, type = "script") => {
+  let scriptUID = Math.random().toString(36).substr(2, 9);
+  fs.writeFileSync(`${dir}/tmp/script_${scriptUID}.json`, JSON.stringify(json));
+  return `${dir}/tmp/${type}_${scriptUID}.json`;
+};
+
+exports.txInToString = (dir, txInList) => {
   let result = "";
   txInList.forEach(
-    (txIn) => (result += `--tx-in ${txIn.txHash}#${txIn.txId} `)
+    (txIn) =>
+      (result += `--tx-in ${txIn.txHash}#${txIn.txId} ${
+        txIn.script
+          ? `--txin-script-file ${this.jsonToPath(dir, txIn.script)} `
+          : ""
+      }`)
   );
   return result;
 };
@@ -41,10 +83,10 @@ exports.txInToString = (txInList) => {
 exports.txOutToString = (txOutList) => {
   let result = "";
   txOutList.forEach((txOut) => {
-    result += `--tx-out "${txOut.address}+${txOut.amount.lovelace}`;
-    Object.keys(txOut.amount).forEach((currency) => {
-      if (currency == "lovelace") return;
-      result += `+${txOut.amount[currency]} ${currency}`;
+    result += `--tx-out "${txOut.address}+${txOut.value.lovelace}`;
+    Object.keys(txOut.value).forEach((asset) => {
+      if (asset == "lovelace") return;
+      result += `+${txOut.value[asset]} ${asset}`;
     });
     result += `" `;
   });
@@ -85,22 +127,6 @@ exports.setKeys = (obj, path, value) => {
   obj[pList[len - 1]] = value;
 };
 
-exports.tryParseJSON = (jsonString) => {
-  try {
-    var o = JSON.parse(jsonString);
-
-    // Handle non-exception-throwing cases:
-    // Neither JSON.parse(false) or JSON.parse(1234) throw errors, hence the type-checking,
-    // but... JSON.parse(null) returns null, and typeof null === "object",
-    // so we must check for that, too. Thankfully, null is falsey, so this suffices:
-    if (o && typeof o === "object") {
-      return true;
-    }
-  } catch (e) {}
-
-  return false;
-};
-
 exports.fileExists = (files) => {
   for (file of files) {
     let exists;
@@ -114,27 +140,41 @@ exports.fileExists = (files) => {
   }
 };
 
-exports.mintToString = (mintList) => {
+exports.mintToString = (dir, minting) => {
   let result = `--mint="`;
-  mintList.forEach((mint, index, arr) => {
+  minting.action.forEach((mint, index, arr) => {
     if (
       !(
-        (mint.amount || mint.token) &&
-        (mint.action == "mint" || mint.action == "burn")
+        (mint.quantity || mint.asset) &&
+        (mint.type == "mint" || mint.type == "burn")
       )
     )
-      throw new Error("action, amount and token property required");
+      throw new Error("type, asset and quantity property required");
     if (Object.is(arr.length - 1, index)) {
-      result += `${mint.action == "mint" ? "" : "-"}${mint.amount} ${
-        mint.token
+      result += `${mint.type == "mint" ? "" : "-"}${mint.quantity} ${
+        mint.asset
       }`;
     } else {
-      result += `${mint.action == "mint" ? "" : "-"}${mint.amount} ${
-        mint.token
+      result += `${mint.type == "mint" ? "" : "-"}${mint.quantity} ${
+        mint.asset
       }+`;
     }
   });
   result = result.trim();
   result += `" `;
+  result += minting.script
+    .map((script) => `--minting-script-file ${this.jsonToPath(dir, script)}`)
+    .join(" ");
+  return result;
+};
+
+exports.multiAssetToString = (value) => {
+  let result = "";
+  result += `"${value.lovelace}`;
+  Object.keys(value).forEach((asset) => {
+    if (asset == "lovelace") return;
+    result += `+${value[asset]} ${asset}`;
+  });
+  result += `"`;
   return result;
 };

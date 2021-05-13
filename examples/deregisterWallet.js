@@ -20,13 +20,13 @@ const deregisterWallet = (wallet) => {
   let keyDeposit = cardanocliJs.queryProtocolParameters().keyDeposit;
   let stakeCert = cardanocliJs.stakeAddressDeregistrationCertificate(account);
   let paymentAddress = cardanocliJs.wallet(account).paymentAddr;
-  let balance = cardanocliJs.wallet(account).balance().amount.lovelace;
+  let balance = cardanocliJs.wallet(account).balance().value.lovelace;
   let tx = {
     txIn: cardanocliJs.queryUtxo(paymentAddress),
     txOut: [
-      { address: paymentAddress, amount: { lovelace: balance + keyDeposit } },
+      { address: paymentAddress, value: { lovelace: balance + keyDeposit } },
     ],
-    certs: [stakeCert],
+    certs: [{ cert: stakeCert }],
     witnessCount: 2,
   };
   let txBodyRaw = cardanocliJs.transactionBuildRaw(tx);
@@ -34,7 +34,7 @@ const deregisterWallet = (wallet) => {
     ...tx,
     txBody: txBodyRaw,
   });
-  tx.txOut[0].amount.lovelace -= fee;
+  tx.txOut[0].value.lovelace -= fee;
   let txBody = cardanocliJs.transactionBuildRaw({ ...tx, fee });
   let txSigned = cardanocliJs.transactionSign({
     txBody,

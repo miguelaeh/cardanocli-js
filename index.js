@@ -13,6 +13,10 @@ const {
   setKeys,
   fileExists,
   mintToString,
+  jsonToPath,
+  auxScriptToString,
+  withdrawalToString,
+  multiAssetToString,
 } = require("./helper");
 const fetch =
   typeof window !== "undefined" ? window.fetch : require("sync-fetch");
@@ -35,6 +39,40 @@ const fetch =
 /**
  * @typedef stakeAddr
  * @property {string}
+ */
+
+/**
+ * @typedef {Object} TxIn
+ * @property {string} txHash
+ * @property {string} txId
+ * @property {object=} script
+ */
+/**
+ * @typedef {Object} TxOut
+ * @property {string} address
+ * @property {object} value
+ */
+/**
+ * @typedef {Object} MintAction
+ * @property {string} action
+ * @property {number} quantity
+ * @property {string} asset
+ */
+/**
+ * @typedef {Object} Mint
+ * @property {Array<MintAction>} mintAction
+ * @property {Array<object>} script
+ */
+/**
+ * @typedef {Object} Certificate
+ * @property {path} cert
+ * @property {object=} script
+ */
+/**
+ * @typedef {Object} Withdrawal
+ * @property {string} stakingAddress
+ * @property {lovelace} reward
+ * @property {object=} script
  */
 
 class CardanocliJs {
@@ -167,32 +205,32 @@ class CardanocliJs {
         ? response.then((res) => res.json())
         : response.json();
     }
-    let utxosRaw = execSync(`${this.cliPath} query utxo \
+    const utxosRaw = execSync(`${this.cliPath} query utxo \
             --${this.network} \
             --address ${address} \
             --cardano-mode \
             ${this.era}
             `).toString();
 
-    let utxos = utxosRaw.split("\n");
+    const utxos = utxosRaw.split("\n");
     utxos.splice(0, 1);
     utxos.splice(0, 1);
     utxos.splice(utxos.length - 1, 1);
-    let result = utxos.map((raw, index) => {
-      let utxo = raw.replace(/\s+/g, " ").split(" ");
-      let txHash = utxo[0];
-      let txId = utxo[1];
-      let assets = utxo.slice(2, utxo.length).join(" ").split("+");
-      let amount = {};
-      assets.forEach((asset) => {
-        let [value, currency] = asset.trim().split(" ");
-        value = parseInt(value);
-        amount[currency] = value;
+    const result = utxos.map((raw, index) => {
+      const utxo = raw.replace(/\s+/g, " ").split(" ");
+      const txHash = utxo[0];
+      const txId = parseInt(utxo[1]);
+      const valueList = utxo.slice(2, utxo.length).join(" ").split("+");
+      const value = {};
+      valueList.forEach((v) => {
+        let [quantity, asset] = v.trim().split(" ");
+        quantity = parseInt(quantity);
+        value[asset] = quantity;
       });
       return {
-        txHash: utxo[0],
-        txId: parseInt(utxo[1]),
-        amount,
+        txHash,
+        txId,
+        value,
       };
     });
 
@@ -268,16 +306,31 @@ class CardanocliJs {
   /**
    *
    * @param {string} account - Name of account
-   * @returns {path} - Path to the payment address
+   * @param {Object} options
+   * @param {path} [options.paymentVkey]
+   * @param {path} [options.stakeVkey]
+   * @param {object} [options.paymentScript]
+   * @param {object} [options.stakeScript]
    */
-  addressBuild(account) {
-    if (this.httpProvider && typeof window !== "undefined") {
-      let response = fetch(`${this.httpProvider}/${account}/addressBuild`);
-      return response.then((res) => res.text());
-    }
+  addressBuild(account, options) {
+    const paymentVkey = options.paymentVkey
+      ? `--payment-verification-key-file ${options.paymentVkey}`
+      : "";
+    const stakeVkey = options.stakeVkey
+      ? `--staking-verification-key-file ${options.stakeVkey}`
+      : "";
+    const paymentScript = options.paymentScript
+      ? `--payment-script-file ${jsonToPath(this.dir, options.paymentScript)}`
+      : "";
+    const stakeScript = options.stakeScript
+      ? `--stake-script-file ${jsonToPath(this.dir, options.stakeScript)}`
+      : "";
+
     execSync(`${this.cliPath} address build \
-                    --payment-verification-key-file ${this.dir}/priv/wallet/${account}/${account}.payment.vkey \
-                    --staking-verification-key-file ${this.dir}/priv/wallet/${account}/${account}.stake.vkey \
+                    ${paymentVkey} \
+                    ${stakeVkey} \
+                    ${paymentScript} \
+                    ${stakeScript} \
                     --out-file ${this.dir}/priv/wallet/${account}/${account}.payment.addr \
                     --${this.network}
                 `);
@@ -382,24 +435,25 @@ class CardanocliJs {
       setKeys(keysPath, name, `${this.dir}/priv/wallet/${account}/${file}`);
     });
 
-    let balance = () => {
-      let utxos = this.queryUtxo(paymentAddr);
-      let amount = {};
+    const balance = () => {
+      const utxos = this.queryUtxo(paymentAddr);
+      const value = {};
       utxos.forEach((utxo) => {
-        Object.keys(utxo.amount).forEach((currency) => {
-          if (!amount[currency]) amount[currency] = 0;
-          amount[currency] += utxo.amount[currency];
+        Object.keys(utxo.value).forEach((asset) => {
+          if (!value[asset]) value[asset] = 0;
+          value[asset] += utxo.value[asset];
         });
       });
 
-      return { utxo: utxos, amount };
+      return { utxo: utxos, value };
     };
     let reward = () => {
       let r;
       try {
         r = this.queryStakeAddressInfo(stakingAddr);
-        r = r.find((delegation) => delegation.address == stakingAddr)
-          .rewardAccountBalance;
+        r = r.find(
+          (delegation) => delegation.address == stakingAddr
+        ).rewardAccountBalance;
       } catch {
         r = "Staking key is not registered";
       }
@@ -769,16 +823,16 @@ class CardanocliJs {
   /**
    *
    * @param {Object} options
-   * @param {Array<object>} options.txIn
-   * @param {Array<object>} options.txOut
-   * @param {object=} options.withdrawal
-   * @param {Array<path>=} options.certs
+   * @param {Array<TxIn>} options.txIn
+   * @param {Array<TxOut>} options.txOut
+   * @param {Array<Withdrawal>=} options.withdrawals
+   * @param {Array<Certificate>=} options.certs
    * @param {lovelace=} options.fee
-   * @param {Array<object>} options.mint
-   * @param {object=} options.script
+   * @param {Mint=} options.mint
+   * @param {Array<object>=} options.auxScript
    * @param {object=} options.metadata
    * @param {number=} options.invalidBefore - Default: 0
-   * @param {number=} options.invalidAfter - Default: 10000
+   * @param {number=} options.invalidAfter - Default: current+10000
    * @returns {path}
    */
   transactionBuildRaw(options) {
@@ -794,40 +848,28 @@ class CardanocliJs {
       });
       return response.then((res) => res.text());
     }
-    let scriptFile = "";
-    if (options.script) {
-      let scriptUID = Math.random().toString(36).substr(2, 9);
-      fs.writeFileSync(
-        `${this.dir}/tmp/script_${scriptUID}.json`,
-        JSON.stringify(options.script)
-      );
-      scriptFile = `--script-file ${this.dir}/tmp/script_${scriptUID}.json`;
-    }
-    let metadataFile = "";
-    if (options.metadata) {
-      let metatUID = Math.random().toString(36).substr(2, 9);
-      fs.writeFileSync(
-        `${this.dir}/tmp/metadata_${metatUID}.json`,
-        JSON.stringify(options.metadata)
-      );
-      metadataFile = `--metadata-json-file ${this.dir}/tmp/metadata_${metatUID}.json`;
-    }
     let UID = Math.random().toString(36).substr(2, 9);
-    let certs = options.certs ? certToString(options.certs) : "";
-    let withdrawal = options.withdrawal
-      ? `--withdrawal ${options.withdrawal.stakingAddress}+${options.withdrawal.reward}`
+    const txInString = txInToString(this.dir, options.txIn);
+    const txOutString = txOutToString(options.txOut);
+    const mintString = options.mint ? mintToString(this.dir, options.mint) : "";
+    const withdrawals = options.withdrawals
+      ? withdrawalToString(this.dir, options.withdrawals)
       : "";
-    let txInString = txInToString(options.txIn);
-    let txOutString = txOutToString(options.txOut);
-    let mintString = options.mint ? mintToString(options.mint) : "";
+    const certs = options.certs ? certToString(this.dir, options.certs) : "";
+    const metadata = options.metadata
+      ? jsonToPath(this.dir, options.metadata, "metadata")
+      : "";
+    const auxScript = options.auxScript
+      ? auxScriptToString(this.dir, options.auxScript)
+      : "";
     execSync(`${this.cliPath} transaction build-raw \
                 ${txInString} \
                 ${txOutString} \
                 ${certs} \
-                ${withdrawal} \
+                ${withdrawals} \
                 ${mintString} \
-                ${scriptFile} \
-                ${metadataFile} \
+                ${auxScript} \
+                ${metadata} \
                 --invalid-hereafter ${
                   options.invalidAfter
                     ? options.invalidAfter
@@ -910,7 +952,6 @@ class CardanocliJs {
    *
    * @param {Object} options
    * @param {Array<path>} options.signingKeys - One ore more signing keys
-   * @param {object=} options.scriptFile
    * @param {path} options.txBody
    * @returns {path}
    */
@@ -925,20 +966,10 @@ class CardanocliJs {
       });
       return response.then((res) => res.text());
     }
-    let UID = Math.random().toString(36).substr(2, 9);
-    let signingKeys = signingKeysToString(options.signingKeys);
-    let scriptFile = "";
-    if (options.scriptFile) {
-      let UIDScript = Math.random().toString(36).substr(2, 9);
-      fs.writeFileSync(
-        `${this.dir}/tmp/script_${UIDScript}.json`,
-        JSON.stringify(options.scriptFile)
-      );
-      scriptFile = `--script-file ${this.dir}/tmp/script_${UIDScript}.json`;
-    }
+    const UID = Math.random().toString(36).substr(2, 9);
+    const signingKeys = signingKeysToString(options.signingKeys);
     execSync(`${this.cliPath} transaction sign \
         --tx-body-file ${options.txBody} \
-        ${scriptFile} \
         --${this.network} \
         ${signingKeys} \
         --out-file ${this.dir}/tmp/tx_${UID}.signed`);
@@ -950,7 +981,6 @@ class CardanocliJs {
    * @param {Object} options
    * @param {path} options.txBody
    * @param {path} options.signingKey
-   * @param {object=} options.scriptFile
    * @returns {path}
    */
   transactionWitness(options) {
@@ -964,19 +994,9 @@ class CardanocliJs {
       });
       return response.then((res) => res.text());
     }
-    let UID = Math.random().toString(36).substr(2, 9);
-    let scriptFile = "";
-    if (options.scriptFile) {
-      let UIDScript = Math.random().toString(36).substr(2, 9);
-      fs.writeFileSync(
-        `${this.dir}/tmp/script_${UIDScript}.json`,
-        JSON.stringify(options.scriptFile)
-      );
-      scriptFile = `--script-file ${this.dir}/tmp/script_${UIDScript}.json`;
-    }
+    const UID = Math.random().toString(36).substr(2, 9);
     execSync(`${this.cliPath} transaction witness \
         --tx-body-file ${options.txBody} \
-        ${scriptFile} \
         --${this.network} \
         --signing-key-file ${options.signingKey} \
         --out-file ${this.dir}/tmp/tx_${UID}.witness`);
@@ -1008,6 +1028,25 @@ class CardanocliJs {
         ${witnessFiles} \
         --out-file ${this.dir}/tmp/tx_${UID}.signed`);
     return `${this.dir}/tmp/tx_${UID}.signed`;
+  }
+
+  /**
+   *
+   *
+   * @param {object} value
+   * @returns {lovelace}
+   */
+  transactionCalculateMinValue(value) {
+    this.queryProtocolParameters();
+    const multiAsset = multiAssetToString(value);
+    return parseInt(
+      execSync(`${this.cliPath} transaction calculate-min-value \
+                --multi-asset ${multiAsset} \
+                --protocol-params-file ${this.protocolParametersPath}`)
+        .toString()
+        .replace(/\s+/g, " ")
+        .split(" ")[1]
+    );
   }
 
   /**
@@ -1071,6 +1110,22 @@ class CardanocliJs {
       ? `--tx-body-file ${options.txBody}`
       : `--tx-file ${options.txFile}`;
     return execSync(`${this.cliPath} transaction txid ${txArg}`)
+      .toString()
+      .trim();
+  }
+
+  /**
+   *
+   * @param {Object} options
+   * @param {path=} options.txBody
+   * @param {path=} options.txFile
+   * @returns {path}
+   */
+  transactionView(options) {
+    const txArg = options.txBody
+      ? `--tx-body-file ${options.txBody}`
+      : `--tx-file ${options.txFile}`;
+    return execSync(`${this.cliPath} transaction view ${txArg}`)
       .toString()
       .trim();
   }
