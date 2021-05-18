@@ -63,7 +63,7 @@ exports.auxScriptToString = (dir, scriptList) => {
 
 exports.jsonToPath = (dir, json, type = "script") => {
   let scriptUID = Math.random().toString(36).substr(2, 9);
-  fs.writeFileSync(`${dir}/tmp/script_${scriptUID}.json`, JSON.stringify(json));
+  fs.writeFileSync(`${dir}/tmp/${type}_${scriptUID}.json`, JSON.stringify(json));
   return `${dir}/tmp/${type}_${scriptUID}.json`;
 };
 
