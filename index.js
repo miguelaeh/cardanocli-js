@@ -652,7 +652,7 @@ class CardanocliJs {
                         } \
                         --out-file ${
                           this.dir
-                        }/priv/pool/${poolName}/${poolName}.node.cert 
+                        }/priv/pool/${poolName}/${poolName}.node.cert
                     `);
     return `${this.dir}/priv/pool/${poolName}/${poolName}.node.cert`;
   }
@@ -857,7 +857,7 @@ class CardanocliJs {
       : "";
     const certs = options.certs ? certToString(this.dir, options.certs) : "";
     const metadata = options.metadata
-      ? "--metadata-json-file" + jsonToPath(this.dir, options.metadata, "metadata")
+      ? "--metadata-json-file " + jsonToPath(this.dir, options.metadata, "metadata")
       : "";
     const auxScript = options.auxScript
       ? auxScriptToString(this.dir, options.auxScript)
