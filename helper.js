@@ -142,7 +142,7 @@ exports.fileExists = (files) => {
 
 exports.mintToString = (dir, minting) => {
   let result = `--mint="`;
-  minting.action.forEach((mint, index, arr) => {
+  minting.actions.forEach((mint, index, arr) => {
     if (
       !(
         (mint.quantity || mint.asset) &&
