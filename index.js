@@ -174,8 +174,7 @@ class CardanocliJs {
     execSync(`${this.cliPath} query protocol-parameters \
                             --${this.network} \
                             --cardano-mode \
-                            --out-file ${this.dir}/tmp/protocolParams.json \
-                            ${this.era}
+                            --out-file ${this.dir}/tmp/protocolParams.json
                         `);
     this.protocolParametersPath = `${this.dir}/tmp/protocolParams.json`;
     return JSON.parse(execSync(`cat ${this.dir}/tmp/protocolParams.json`));
@@ -215,8 +214,7 @@ class CardanocliJs {
     return JSON.parse(
       execSync(`${this.cliPath} query stake-address-info \
         --${this.network} \
-        --address ${address} \
-        ${this.era}
+        --address ${address}
         `).toString()
     );
   }
@@ -235,8 +233,7 @@ class CardanocliJs {
     const utxosRaw = execSync(`${this.cliPath} query utxo \
             --${this.network} \
             --address ${address} \
-            --cardano-mode \
-            ${this.era}
+            --cardano-mode
             `).toString();
 
     const utxos = utxosRaw.split("\n");
@@ -983,7 +980,7 @@ class CardanocliJs {
     const witnessOverride = options.witnessOverride
       ? `--witness-override ${options.witnessOverride}`
       : "";
-    execSync(`${this.cliPath} transaction build-raw \
+    execSync(`${this.cliPath} transaction build \
                 ${txInString} \
                 ${txOutString} \
                 ${txInCollateralString} \
@@ -1002,9 +999,9 @@ class CardanocliJs {
                 --invalid-before ${
                   options.invalidBefore ? options.invalidBefore : 0
                 } \
-                --fee ${options.fee ? options.fee : 0} \
                 --out-file ${this.dir}/tmp/tx_${UID}.raw \
                 ${changeAddressString} \
+                --${this.network} \
                 ${this.era}`);
 
     return `${this.dir}/tmp/tx_${UID}.raw`;
