@@ -48,10 +48,9 @@ const tx = {
       value: { ...wallet.balance().value, [BERRYCOIN]: 100 },
     },
   ],
-  mint: {
-    action: [{ type: "mint", quantity: 100, asset: BERRYCOIN }],
-    script: [mintScript],
-  },
+  mint: [
+    { action: "mint", quantity: 100, asset: BERRYCOIN, script: mintScript },
+  ],
   witnessCount: 2,
 };
 

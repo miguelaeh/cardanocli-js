@@ -10,7 +10,7 @@ This is a library, which wraps the cardano-cli with JavaScript and makes it poss
 
 ## Prerequisites
 
-- `cardano-node >= 1.27.0`
+- `cardano-node >= 1.29.0`
 - `node.js >= 12.19.0`
 
 ## Install

@@ -32,6 +32,22 @@ exports.certToString = (dir, certList) => {
         cert.script
           ? `--certificate-script-file ${this.jsonToPath(dir, cert.script)} `
           : ""
+      } ${
+        cert.datum
+          ? `--certificate-script-datum-value '${JSON.stringify(cert.datum)}' `
+          : ""
+      } ${
+        cert.redeemer
+          ? `--certificate-script-redeemer-value '${JSON.stringify(
+              cert.redeemer
+            )}' `
+          : ""
+      } ${
+        cert.executionUnits
+          ? `--certificate-execution-units "(${
+              cert.executionUnits[0] + "," + cert.executionUnits[1]
+            }})" `
+          : ""
       }`)
   );
   return result;
@@ -50,6 +66,24 @@ exports.withdrawalToString = (dir, withdrawalList) => {
               withdrawal.script
             )} `
           : ""
+      } ${
+        withdrawal.datum
+          ? `--withdrawal-script-datum-value '${JSON.stringify(
+              withdrawal.datum
+            )}' `
+          : ""
+      } ${
+        withdrawal.redeemer
+          ? `--withdrawal-script-redeemer-value '${JSON.stringify(
+              withdrawal.redeemer
+            )}' `
+          : ""
+      } ${
+        withdrawal.executionUnits
+          ? `--withdrawal-execution-units "(${
+              withdrawal.executionUnits[0] + "," + withdrawal.executionUnits[1]
+            }})" `
+          : ""
       }`)
   );
   return result;
@@ -63,17 +97,36 @@ exports.auxScriptToString = (dir, scriptList) => {
 
 exports.jsonToPath = (dir, json, type = "script") => {
   let scriptUID = Math.random().toString(36).substr(2, 9);
-  fs.writeFileSync(`${dir}/tmp/${type}_${scriptUID}.json`, JSON.stringify(json));
+  fs.writeFileSync(
+    `${dir}/tmp/${type}_${scriptUID}.json`,
+    JSON.stringify(json)
+  );
   return `${dir}/tmp/${type}_${scriptUID}.json`;
 };
 
-exports.txInToString = (dir, txInList) => {
+exports.txInToString = (dir, txInList, isCollateral) => {
   let result = "";
   txInList.forEach(
     (txIn) =>
-      (result += `--tx-in ${txIn.txHash}#${txIn.txId} ${
+      (result += `--tx-in${isCollateral ? "-collateral" : ""} ${txIn.txHash}#${
+        txIn.txId
+      } ${
         txIn.script
-          ? `--txin-script-file ${this.jsonToPath(dir, txIn.script)} `
+          ? `--tx-in-script-file ${this.jsonToPath(dir, txIn.script)} `
+          : ""
+      } ${
+        txIn.datum
+          ? `--tx-in-script-datum-value '${JSON.stringify(txIn.datum)}' `
+          : ""
+      } ${
+        txIn.redeemer
+          ? `--tx-in-script-redeemer-value '${JSON.stringify(txIn.redeemer)}' `
+          : ""
+      } ${
+        txIn.executionUnits
+          ? `--tx-in-execution-units "(${
+              txIn.executionUnits[0] + "," + txIn.executionUnits[1]
+            }})" `
           : ""
       }`)
   );
@@ -89,6 +142,7 @@ exports.txOutToString = (txOutList) => {
       result += `+${txOut.value[asset]} ${asset}`;
     });
     result += `" `;
+    txOut.datumHash && (result += `--tx-out-datum-hash ${txOut.datumHash}`);
   });
   return result;
 };
@@ -142,28 +196,48 @@ exports.fileExists = (files) => {
 
 exports.mintToString = (dir, minting) => {
   let result = `--mint="`;
-  minting.action.forEach((mint, index, arr) => {
+  minting.forEach((mint, index, arr) => {
     if (
       !(
         (mint.quantity || mint.asset) &&
-        (mint.type == "mint" || mint.type == "burn")
+        (mint.action == "mint" || mint.action == "burn")
       )
     )
       throw new Error("type, asset and quantity property required");
     if (Object.is(arr.length - 1, index)) {
-      result += `${mint.type == "mint" ? "" : "-"}${mint.quantity} ${
+      result += `${mint.action == "mint" ? "" : "-"}${mint.quantity} ${
         mint.asset
       }`;
     } else {
-      result += `${mint.type == "mint" ? "" : "-"}${mint.quantity} ${
+      result += `${mint.action == "mint" ? "" : "-"}${mint.quantity} ${
         mint.asset
       }+`;
     }
   });
   result = result.trim();
   result += `" `;
-  result += minting.script
-    .map((script) => `--minting-script-file ${this.jsonToPath(dir, script)}`)
+  const usedScripts = [];
+  result += minting
+    .map((mint) => {
+      const script = this.jsonToPath(dir, mint.script);
+      if (usedScripts.includes(script)) return "";
+      usedScripts.push(script);
+      return `--minting-script-file ${script} ${
+        mint.datum
+          ? `--tx-in-script-datum-value '${JSON.stringify(mint.datum)}' `
+          : ""
+      } ${
+        mint.redeemer
+          ? `--tx-in-script-redeemer-value '${JSON.stringify(mint.redeemer)}' `
+          : ""
+      } ${
+        mint.executionUnits
+          ? `--tx-in-execution-units "(${
+              mint.executionUnits[0] + "," + mint.executionUnits[1]
+            }})" `
+          : ""
+      }`;
+    })
     .join(" ");
   return result;
 };

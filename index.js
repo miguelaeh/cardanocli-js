@@ -27,6 +27,16 @@ const fetch =
  */
 
 /**
+ * @typedef asset
+ * @property {string}
+ */
+
+/**
+ * @typedef quantity
+ * @property {string}
+ */
+
+/**
  * @typedef path
  * @property {string}
  */
@@ -46,33 +56,50 @@ const fetch =
  * @property {string} txHash
  * @property {string} txId
  * @property {object=} script
+ * @property {object=} datum
+ * @property {object=} redeemer
+ * @property {[number, number]} executionUnits
  */
 /**
  * @typedef {Object} TxOut
  * @property {string} address
  * @property {object} value
+ * @property {string} datumHash
  */
 /**
- * @typedef {Object} MintAction
- * @property {string} action
- * @property {number} quantity
- * @property {string} asset
+ * @typedef {Object} TxInCollateral
+ * @property {string} txHash
+ * @property {string} txId
  */
 /**
  * @typedef {Object} Mint
- * @property {Array<MintAction>} mintAction
- * @property {Array<object>} script
+ * @property {string} action
+ * @property {string} quantity
+ * @property {string} asset
+ * @property {object} script
+ * @property {object=} datum
+ * @property {object=} redeemer
+ * @property {[number, number]} executionUnits
  */
 /**
  * @typedef {Object} Certificate
  * @property {path} cert
  * @property {object=} script
+ * @property {object=} datum
+ * @property {object=} redeemer
+ * @property {[number, number]} executionUnits
  */
 /**
  * @typedef {Object} Withdrawal
  * @property {string} stakingAddress
  * @property {lovelace} reward
  * @property {object=} script
+ * @property {object=} datum
+ * @property {object=} redeemer
+ * @property {[number, number]} executionUnits
+ */
+/**
+ * @typedef {Object.<string, quantity>} Value
  */
 
 class CardanocliJs {
@@ -199,6 +226,7 @@ class CardanocliJs {
    * @returns {object}
    */
   queryUtxo(address) {
+    address = "addr_test1wr0sggdn8cdgf3675hqqg8t6msvha60hvgnt5u698r0r93c84cwnf";
     if (this.httpProvider) {
       let response = fetch(`${this.httpProvider}/queryUtxo/${address}`);
       return typeof window !== "undefined"
@@ -222,16 +250,21 @@ class CardanocliJs {
       const txId = parseInt(utxo[1]);
       const valueList = utxo.slice(2, utxo.length).join(" ").split("+");
       const value = {};
+      let datumHash;
       valueList.forEach((v) => {
+        if (v.includes("TxOutDatumHash")) {
+          if (!v.includes("None"))
+            datumHash = JSON.parse(v.trim().split(" ")[2]);
+          return;
+        }
         let [quantity, asset] = v.trim().split(" ");
         quantity = parseInt(quantity);
         value[asset] = quantity;
       });
-      return {
-        txHash,
-        txId,
-        value,
-      };
+      const result = { txHash, txId, value };
+      if (datumHash) result.datumHash = datumHash;
+
+      return result;
     });
 
     return result;
@@ -825,14 +858,16 @@ class CardanocliJs {
    * @param {Object} options
    * @param {Array<TxIn>} options.txIn
    * @param {Array<TxOut>} options.txOut
+   * @param {Array<TxInCollateral>=} options.txInCollateral
    * @param {Array<Withdrawal>=} options.withdrawals
    * @param {Array<Certificate>=} options.certs
    * @param {lovelace=} options.fee
-   * @param {Mint=} options.mint
+   * @param {Array<Mint>=} options.mint
    * @param {Array<object>=} options.auxScript
    * @param {object=} options.metadata
    * @param {number=} options.invalidBefore - Default: 0
    * @param {number=} options.invalidAfter - Default: current+10000
+   * @param {boolean} options.scriptInvalid - Default: false
    * @returns {path}
    */
   transactionBuildRaw(options) {
@@ -851,25 +886,32 @@ class CardanocliJs {
     let UID = Math.random().toString(36).substr(2, 9);
     const txInString = txInToString(this.dir, options.txIn);
     const txOutString = txOutToString(options.txOut);
+    const txInCollateralString = options.txInCollateral
+      ? txInToString(this.dir, options.txInCollateral, true)
+      : "";
     const mintString = options.mint ? mintToString(this.dir, options.mint) : "";
     const withdrawals = options.withdrawals
       ? withdrawalToString(this.dir, options.withdrawals)
       : "";
     const certs = options.certs ? certToString(this.dir, options.certs) : "";
     const metadata = options.metadata
-      ? "--metadata-json-file " + jsonToPath(this.dir, options.metadata, "metadata")
+      ? "--metadata-json-file " +
+        jsonToPath(this.dir, options.metadata, "metadata")
       : "";
     const auxScript = options.auxScript
       ? auxScriptToString(this.dir, options.auxScript)
       : "";
+    const scriptInvalid = options.scriptInvalid ? "--script-invalid" : "";
     execSync(`${this.cliPath} transaction build-raw \
                 ${txInString} \
                 ${txOutString} \
+                ${txInCollateralString} \
                 ${certs} \
                 ${withdrawals} \
                 ${mintString} \
                 ${auxScript} \
                 ${metadata} \
+                ${scriptInvalid} \ 
                 --invalid-hereafter ${
                   options.invalidAfter
                     ? options.invalidAfter
@@ -880,6 +922,90 @@ class CardanocliJs {
                 } \
                 --fee ${options.fee ? options.fee : 0} \
                 --out-file ${this.dir}/tmp/tx_${UID}.raw \
+                ${this.era}`);
+
+    return `${this.dir}/tmp/tx_${UID}.raw`;
+  }
+
+  /**
+   *
+   * @param {Object} options
+   * @param {Array<TxIn>} options.txIn
+   * @param {Array<TxOut>} options.txOut
+   * @param {Array<TxInCollateral>=} options.txInCollateral
+   * @param {string=} options.changeAddress
+   * @param {Array<Withdrawal>=} options.withdrawals
+   * @param {Array<Certificate>=} options.certs
+   * @param {lovelace=} options.fee
+   * @param {Array<Mint>=} options.mint
+   * @param {Array<object>=} options.auxScript
+   * @param {object=} options.metadata
+   * @param {number=} options.invalidBefore - Default: 0
+   * @param {number=} options.invalidAfter - Default: current+10000
+   * @param {boolean} options.scriptInvalid - Default: false
+   * @param {number=} options.witnessOverride
+   * @returns {path}
+   */
+  transactionBuild(options) {
+    if (!(options && options.txIn && options.txOut))
+      throw new Error("TxIn and TxOut required");
+    if (this.httpProvider && typeof window !== "undefined") {
+      let response = fetch(`${this.httpProvider}/transactionBuildRaw`, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+        body: JSON.stringify(options),
+      });
+      return response.then((res) => res.text());
+    }
+    let UID = Math.random().toString(36).substr(2, 9);
+    const txInString = txInToString(this.dir, options.txIn);
+    const txOutString = txOutToString(options.txOut);
+    const txInCollateralString = options.txInCollateral
+      ? txInToString(this.dir, options.txInCollateral, true)
+      : "";
+    const changeAddressString = options.changeAddress
+      ? `--change-address ${options.changeAddress}`
+      : "";
+    const mintString = options.mint ? mintToString(this.dir, options.mint) : "";
+    const withdrawals = options.withdrawals
+      ? withdrawalToString(this.dir, options.withdrawals)
+      : "";
+    const certs = options.certs ? certToString(this.dir, options.certs) : "";
+    const metadata = options.metadata
+      ? "--metadata-json-file " +
+        jsonToPath(this.dir, options.metadata, "metadata")
+      : "";
+    const auxScript = options.auxScript
+      ? auxScriptToString(this.dir, options.auxScript)
+      : "";
+    const scriptInvalid = options.scriptInvalid ? "--script-invalid" : "";
+    const witnessOverride = options.witnessOverride
+      ? `--witness-override ${options.witnessOverride}`
+      : "";
+    execSync(`${this.cliPath} transaction build-raw \
+                ${txInString} \
+                ${txOutString} \
+                ${txInCollateralString} \
+                ${certs} \
+                ${withdrawals} \
+                ${mintString} \
+                ${auxScript} \
+                ${metadata} \
+                ${scriptInvalid} \
+                ${witnessOverride} \
+                --invalid-hereafter ${
+                  options.invalidAfter
+                    ? options.invalidAfter
+                    : this.queryTip().slot + 10000
+                } \
+                --invalid-before ${
+                  options.invalidBefore ? options.invalidBefore : 0
+                } \
+                --fee ${options.fee ? options.fee : 0} \
+                --out-file ${this.dir}/tmp/tx_${UID}.raw \
+                ${changeAddressString} \
                 ${this.era}`);
 
     return `${this.dir}/tmp/tx_${UID}.raw`;
@@ -923,7 +1049,7 @@ class CardanocliJs {
   /**
    *
    * @param {object} script
-   * @returns {string} - Policy Id
+   * @returns {string} Policy Id
    */
   transactionPolicyid(script) {
     if (this.httpProvider && typeof window !== "undefined") {
@@ -943,6 +1069,33 @@ class CardanocliJs {
     );
     return execSync(
       `${this.cliPath} transaction policyid --script-file ${this.dir}/tmp/script_${UID}.json`
+    )
+      .toString()
+      .trim();
+  }
+
+  /**
+   *
+   * @param {object} script
+   * @returns {string} Datum hash
+   */
+  transactionHashScriptData(script) {
+    if (this.httpProvider && typeof window !== "undefined") {
+      let response = fetch(`${this.httpProvider}/transactionHashScriptData`, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+        body: JSON.stringify(script),
+      });
+      return response.then((res) => res.text());
+    }
+    return execSync(
+      `${
+        this.cliPath
+      } transaction hash-script-data --script-data-value '${JSON.stringify(
+        script
+      )}'`
     )
       .toString()
       .trim();
@@ -1033,7 +1186,7 @@ class CardanocliJs {
   /**
    *
    *
-   * @param {object} value
+   * @param {Value} value
    * @returns {lovelace}
    */
   transactionCalculateMinValue(value) {
