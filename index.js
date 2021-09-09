@@ -226,7 +226,6 @@ class CardanocliJs {
    * @returns {object}
    */
   queryUtxo(address) {
-    address = "addr_test1wr0sggdn8cdgf3675hqqg8t6msvha60hvgnt5u698r0r93c84cwnf";
     if (this.httpProvider) {
       let response = fetch(`${this.httpProvider}/queryUtxo/${address}`);
       return typeof window !== "undefined"
