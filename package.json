@@ -6,6 +6,10 @@
   "scripts": {
     "test": "jest"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Berry-Pool/cardanocli-js.git"
+  },
   "author": "",
   "license": "ISC",
   "dependencies": {
