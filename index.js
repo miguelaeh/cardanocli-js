@@ -907,7 +907,7 @@ class CardanocliJs {
                 ${mintString} \
                 ${auxScript} \
                 ${metadata} \
-                ${scriptInvalid} \ 
+                ${scriptInvalid} \
                 --invalid-hereafter ${
                   options.invalidAfter
                     ? options.invalidAfter
