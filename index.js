@@ -248,7 +248,7 @@ class CardanocliJs {
       const value = {};
       let datumHash;
       valueList.forEach((v) => {
-        if (v.includes("TxOutDatumHash")) {
+        if (v.includes("TxOutDatumHash") || v.includes("TxOutDatumNone") ) {
           if (!v.includes("None"))
             datumHash = JSON.parse(v.trim().split(" ")[2]);
           return;
