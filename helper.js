@@ -203,7 +203,7 @@ exports.mintToString = (dir, minting) => {
         (mint.action == "mint" || mint.action == "burn")
       )
     )
-      throw new Error("type, asset and quantity property required");
+      throw new Error("action, asset and quantity property required");
     if (Object.is(arr.length - 1, index)) {
       result += `${mint.action == "mint" ? "" : "-"}${mint.quantity} ${
         mint.asset
