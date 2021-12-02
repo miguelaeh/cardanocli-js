@@ -116,11 +116,11 @@ exports.txInToString = (dir, txInList, isCollateral) => {
           : ""
       } ${
         txIn.datum
-          ? `--tx-in-script-datum-value '${JSON.stringify(txIn.datum)}' `
+          ? `--tx-in-datum-value '${JSON.stringify(txIn.datum)}' `
           : ""
       } ${
         txIn.redeemer
-          ? `--tx-in-script-redeemer-value '${JSON.stringify(txIn.redeemer)}' `
+          ? `--tx-in-redeemer-value '${JSON.stringify(txIn.redeemer)}' `
           : ""
       } ${
         txIn.executionUnits
