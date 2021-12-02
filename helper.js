@@ -222,13 +222,9 @@ exports.mintToString = (dir, minting) => {
       const script = this.jsonToPath(dir, mint.script);
       if (usedScripts.includes(script)) return "";
       usedScripts.push(script);
-      return `--minting-script-file ${script} ${
-        mint.datum
-          ? `--tx-in-script-datum-value '${JSON.stringify(mint.datum)}' `
-          : ""
-      } ${
+      return `--mint-script-file ${script} ${
         mint.redeemer
-          ? `--tx-in-script-redeemer-value '${JSON.stringify(mint.redeemer)}' `
+          ? `--mint-redeemer-value '${JSON.stringify(mint.redeemer)}' `
           : ""
       } ${
         mint.executionUnits
