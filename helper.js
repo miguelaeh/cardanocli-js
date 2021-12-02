@@ -46,7 +46,7 @@ exports.certToString = (dir, certList) => {
         cert.executionUnits
           ? `--certificate-execution-units "(${
               cert.executionUnits[0] + "," + cert.executionUnits[1]
-            }})" `
+            })" `
           : ""
       }`)
   );
@@ -82,7 +82,7 @@ exports.withdrawalToString = (dir, withdrawalList) => {
         withdrawal.executionUnits
           ? `--withdrawal-execution-units "(${
               withdrawal.executionUnits[0] + "," + withdrawal.executionUnits[1]
-            }})" `
+            })" `
           : ""
       }`)
   );
@@ -126,7 +126,7 @@ exports.txInToString = (dir, txInList, isCollateral) => {
         txIn.executionUnits
           ? `--tx-in-execution-units "(${
               txIn.executionUnits[0] + "," + txIn.executionUnits[1]
-            }})" `
+            })" `
           : ""
       }`)
   );
@@ -228,9 +228,9 @@ exports.mintToString = (dir, minting) => {
           : ""
       } ${
         mint.executionUnits
-          ? `--tx-in-execution-units "(${
+          ? `--mint-execution-units "(${
               mint.executionUnits[0] + "," + mint.executionUnits[1]
-            }})" `
+            })" `
           : ""
       }`;
     })
