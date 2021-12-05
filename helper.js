@@ -46,7 +46,7 @@ exports.certToString = (dir, certList) => {
         cert.executionUnits
           ? `--certificate-execution-units "(${
               cert.executionUnits[0] + "," + cert.executionUnits[1]
-            }})" `
+            })" `
           : ""
       }`)
   );
@@ -82,7 +82,7 @@ exports.withdrawalToString = (dir, withdrawalList) => {
         withdrawal.executionUnits
           ? `--withdrawal-execution-units "(${
               withdrawal.executionUnits[0] + "," + withdrawal.executionUnits[1]
-            }})" `
+            })" `
           : ""
       }`)
   );
@@ -116,17 +116,17 @@ exports.txInToString = (dir, txInList, isCollateral) => {
           : ""
       } ${
         txIn.datum
-          ? `--tx-in-script-datum-value '${JSON.stringify(txIn.datum)}' `
+          ? `--tx-in-datum-value '${JSON.stringify(txIn.datum)}' `
           : ""
       } ${
         txIn.redeemer
-          ? `--tx-in-script-redeemer-value '${JSON.stringify(txIn.redeemer)}' `
+          ? `--tx-in-redeemer-value '${JSON.stringify(txIn.redeemer)}' `
           : ""
       } ${
         txIn.executionUnits
           ? `--tx-in-execution-units "(${
               txIn.executionUnits[0] + "," + txIn.executionUnits[1]
-            }})" `
+            })" `
           : ""
       }`)
   );
@@ -222,19 +222,15 @@ exports.mintToString = (dir, minting) => {
       const script = this.jsonToPath(dir, mint.script);
       if (usedScripts.includes(script)) return "";
       usedScripts.push(script);
-      return `--minting-script-file ${script} ${
-        mint.datum
-          ? `--tx-in-script-datum-value '${JSON.stringify(mint.datum)}' `
-          : ""
-      } ${
+      return `--mint-script-file ${script} ${
         mint.redeemer
-          ? `--tx-in-script-redeemer-value '${JSON.stringify(mint.redeemer)}' `
+          ? `--mint-redeemer-value '${JSON.stringify(mint.redeemer)}' `
           : ""
       } ${
         mint.executionUnits
-          ? `--tx-in-execution-units "(${
+          ? `--mint-execution-units "(${
               mint.executionUnits[0] + "," + mint.executionUnits[1]
-            }})" `
+            })" `
           : ""
       }`;
     })
