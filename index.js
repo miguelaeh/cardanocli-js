@@ -57,7 +57,9 @@ const fetch =
  * @property {string} txId
  * @property {object=} script
  * @property {object=} datum
+ * @property {object=} datumJSON
  * @property {object=} redeemer
+ * @property {object=} redeemerJSON
  * @property {[number, number]} executionUnits
  */
 /**
@@ -79,6 +81,7 @@ const fetch =
  * @property {object} script
  * @property {object=} datum
  * @property {object=} redeemer
+ * @property {object=} redeemerJSON
  * @property {[number, number]} executionUnits
  */
 /**

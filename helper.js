@@ -104,6 +104,16 @@ exports.jsonToPath = (dir, json, type = "script") => {
   return `${dir}/tmp/${type}_${scriptUID}.json`;
 };
 
+exports.datumToString = (datum, datumJSON) =>
+  datumJSON
+    ? `--tx-in-datum-file  ${this.jsonToPath(dir, datumJSON)}`
+    : `--tx-in-datum-value ${JSON.stringify(datum)}`;
+
+exports.redeemerToString = (redeemer, redeemerJSON) =>
+  redeemerJSON
+    ? `--tx-in-redeemer-file  ${this.jsonToPath(dir, redeemerJSON)}`
+    : `--tx-in-redeemer-value ${JSON.stringify(redeemer)}`;
+
 exports.txInToString = (dir, txInList, isCollateral) => {
   let result = "";
   txInList.forEach(
@@ -115,12 +125,12 @@ exports.txInToString = (dir, txInList, isCollateral) => {
           ? `--tx-in-script-file ${this.jsonToPath(dir, txIn.script)} `
           : ""
       } ${
-        txIn.datum
-          ? `--tx-in-datum-value '${JSON.stringify(txIn.datum)}' `
+        txIn.datum || txIn.datumJSON
+          ? this.datumToString(txIn.datum, txIn.datumJSON)
           : ""
       } ${
-        txIn.redeemer
-          ? `--tx-in-redeemer-value '${JSON.stringify(txIn.redeemer)}' `
+        txIn.redeemer || txIn.redeemerJSON
+          ? this.datumToString(txIn.redeemer, txIn.redeemerJSON)
           : ""
       } ${
         txIn.executionUnits
@@ -194,6 +204,11 @@ exports.fileExists = (files) => {
   }
 };
 
+exports.mintRedeemerToString = (mintRedeemer, mintRedeemerJSON) =>
+  redeemerJSON
+    ? `--mint-redeemer-file  ${this.jsonToPath(dir, mintRedeemerJSON)}`
+    : `--mint-redeemer-value ${JSON.stringify(mintRedeemer)}`;
+
 exports.mintToString = (dir, minting) => {
   let result = `--mint="`;
   minting.forEach((mint, index, arr) => {
@@ -223,8 +238,8 @@ exports.mintToString = (dir, minting) => {
       if (usedScripts.includes(script)) return "";
       usedScripts.push(script);
       return `--mint-script-file ${script} ${
-        mint.redeemer
-          ? `--mint-redeemer-value '${JSON.stringify(mint.redeemer)}' `
+        mint.redeemer || mint.redeemerJSON
+          ? this.mintRedeemerToString(mint.redeemer, mint.redeemerJSON)
           : ""
       } ${
         mint.executionUnits
