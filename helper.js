@@ -104,12 +104,12 @@ exports.jsonToPath = (dir, json, type = "script") => {
   return `${dir}/tmp/${type}_${scriptUID}.json`;
 };
 
-exports.datumToString = (datum, datumJSON) =>
+exports.datumToString = (dir, datum, datumJSON) =>
   datumJSON
     ? `--tx-in-datum-file  ${this.jsonToPath(dir, datumJSON)}`
     : `--tx-in-datum-value ${JSON.stringify(datum)}`;
 
-exports.redeemerToString = (redeemer, redeemerJSON) =>
+exports.redeemerToString = (dir, redeemer, redeemerJSON) =>
   redeemerJSON
     ? `--tx-in-redeemer-file  ${this.jsonToPath(dir, redeemerJSON)}`
     : `--tx-in-redeemer-value ${JSON.stringify(redeemer)}`;
@@ -126,11 +126,11 @@ exports.txInToString = (dir, txInList, isCollateral) => {
           : ""
       } ${
         txIn.datum || txIn.datumJSON
-          ? this.datumToString(txIn.datum, txIn.datumJSON)
+          ? this.datumToString(dir, txIn.datum, txIn.datumJSON)
           : ""
       } ${
         txIn.redeemer || txIn.redeemerJSON
-          ? this.datumToString(txIn.redeemer, txIn.redeemerJSON)
+          ? this.datumToString(dir, txIn.redeemer, txIn.redeemerJSON)
           : ""
       } ${
         txIn.executionUnits
@@ -204,8 +204,8 @@ exports.fileExists = (files) => {
   }
 };
 
-exports.mintRedeemerToString = (mintRedeemer, mintRedeemerJSON) =>
-  redeemerJSON
+exports.mintRedeemerToString = (dir, mintRedeemer, mintRedeemerJSON) =>
+  mintRedeemerJSON
     ? `--mint-redeemer-file  ${this.jsonToPath(dir, mintRedeemerJSON)}`
     : `--mint-redeemer-value ${JSON.stringify(mintRedeemer)}`;
 
@@ -239,7 +239,7 @@ exports.mintToString = (dir, minting) => {
       usedScripts.push(script);
       return `--mint-script-file ${script} ${
         mint.redeemer || mint.redeemerJSON
-          ? this.mintRedeemerToString(mint.redeemer, mint.redeemerJSON)
+          ? this.mintRedeemerToString(dir, mint.redeemer, mint.redeemerJSON)
           : ""
       } ${
         mint.executionUnits
