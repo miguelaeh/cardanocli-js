@@ -237,7 +237,7 @@ exports.mintToString = (dir, minting) => {
       const script = this.jsonToPath(dir, mint.script);
       if (usedScripts.includes(script)) return "";
       usedScripts.push(script);
-      return `--mint-script-file ${script} ${
+      return `--minting-script-file ${script} ${
         mint.redeemer || mint.redeemerJSON
           ? this.mintRedeemerToString(dir, mint.redeemer, mint.redeemerJSON)
           : ""
