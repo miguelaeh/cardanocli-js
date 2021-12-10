@@ -234,8 +234,9 @@ exports.mintToString = (dir, minting) => {
   const usedScripts = [];
   result += minting
     .map((mint) => {
-      if (usedScripts.includes(mint.script)) return "";
-      usedScripts.push(mint.script);
+      const stringifiedScript = JSON.stringify(mint.script)
+      if (usedScripts.includes(stringifiedScript)) return "";
+      usedScripts.push(stringifiedScript);
       const script = this.jsonToPath(dir, mint.script);
       return `--minting-script-file ${script} ${
         mint.redeemer || mint.redeemerJSON
