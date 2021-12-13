@@ -902,6 +902,7 @@ class CardanocliJs {
 
     const scriptInvalid = options.scriptInvalid ? "--script-invalid" : "";
     execSync(`${this.cliPath} transaction build-raw \
+                --alonzo-era \
                 ${txInString} \
                 ${txOutString} \
                 ${txInCollateralString} \
