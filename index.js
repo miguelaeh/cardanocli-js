@@ -1206,6 +1206,28 @@ class CardanocliJs {
 
   /**
    *
+   * @param {paymentAddr} address
+   * @param {Value} value
+   * @returns {lovelace}
+   */
+  transactionCalculateMinRequiredUtxo(address, value) {
+    this.queryProtocolParameters();
+    const multiAsset = multiAssetToString(value);
+    console.log(multiAsset)
+    return parseInt(
+        execSync(`${this.cliPath} transaction calculate-min-required-utxo \
+                --alonzo-era \
+                --tx-out ${address}+${multiAsset} \
+                --protocol-params-file ${this.protocolParametersPath}`)
+            .toString()
+            .replace(/\s+/g, " ")
+            .split(" ")[1]
+    );
+  }
+
+
+  /**
+   *
    * @param {path | string} tx - Path or Signed Tx File
    * @returns {string} - Transaction Hash
    */
