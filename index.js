@@ -1213,7 +1213,6 @@ class CardanocliJs {
   transactionCalculateMinRequiredUtxo(address, value) {
     this.queryProtocolParameters();
     const multiAsset = multiAssetToString(value);
-    console.log(multiAsset)
     return parseInt(
         execSync(`${this.cliPath} transaction calculate-min-required-utxo \
                 --alonzo-era \
@@ -1224,7 +1223,6 @@ class CardanocliJs {
             .split(" ")[1]
     );
   }
-
 
   /**
    *
