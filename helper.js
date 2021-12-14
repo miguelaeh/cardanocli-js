@@ -130,7 +130,7 @@ exports.txInToString = (dir, txInList, isCollateral) => {
           : ""
       } ${
         txIn.redeemer || txIn.redeemerJSON
-          ? this.datumToString(dir, txIn.redeemer, txIn.redeemerJSON)
+          ? this.redeemerToString(dir, txIn.redeemer, txIn.redeemerJSON)
           : ""
       } ${
         txIn.executionUnits
