@@ -902,6 +902,7 @@ class CardanocliJs {
 
     const scriptInvalid = options.scriptInvalid ? "--script-invalid" : "";
     execSync(`${this.cliPath} transaction build-raw \
+                --alonzo-era \
                 ${txInString} \
                 ${txOutString} \
                 ${txInCollateralString} \
@@ -1201,6 +1202,26 @@ class CardanocliJs {
         .toString()
         .replace(/\s+/g, " ")
         .split(" ")[1]
+    );
+  }
+
+  /**
+   *
+   * @param {paymentAddr} address
+   * @param {Value} value
+   * @returns {lovelace}
+   */
+  transactionCalculateMinRequiredUtxo(address, value) {
+    this.queryProtocolParameters();
+    const multiAsset = multiAssetToString(value);
+    return parseInt(
+        execSync(`${this.cliPath} transaction calculate-min-required-utxo \
+                --alonzo-era \
+                --tx-out ${address}+${multiAsset} \
+                --protocol-params-file ${this.protocolParametersPath}`)
+            .toString()
+            .replace(/\s+/g, " ")
+            .split(" ")[1]
     );
   }
 
