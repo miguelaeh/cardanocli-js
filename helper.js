@@ -153,6 +153,7 @@ exports.txOutToString = (txOutList) => {
     });
     result += `" `;
     txOut.datumHash && (result += `--tx-out-datum-hash ${txOut.datumHash} `);
+    txOut.datumEmbedFile && (result += `--tx-out-datum-embed-file ${this.jsonToPath(txOut.datumEmbedFile)} `);
   });
   return result;
 };

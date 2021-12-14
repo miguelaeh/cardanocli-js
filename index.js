@@ -67,6 +67,7 @@ const fetch =
  * @property {string} address
  * @property {object} value
  * @property {string} datumHash
+ * @property {object} datumEmbedFile
  */
 /**
  * @typedef {Object} TxInCollateral
