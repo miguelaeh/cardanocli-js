@@ -1106,6 +1106,31 @@ class CardanocliJs {
       .trim();
   }
 
+    /**
+   *
+   * @param {object} script
+   * @returns {string} Datum hash
+   */
+     transactionHashScriptFile(script) {
+      if (this.httpProvider && typeof window !== "undefined") {
+        let response = fetch(`${this.httpProvider}/transactionHashScriptData`, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          method: "POST",
+          body: JSON.stringify(script),
+        });
+        return response.then((res) => res.text());
+      }
+      return execSync(
+        `${
+          this.cliPath
+        } transaction hash-script-data --script-data-file ${jsonToPath(script)}`
+      )
+        .toString()
+        .trim();
+    }
+
   /**
    *
    * @param {Object} options
