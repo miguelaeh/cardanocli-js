@@ -1125,7 +1125,7 @@ class CardanocliJs {
       return execSync(
         `${
           this.cliPath
-        } transaction hash-script-data --script-data-file ${jsonToPath(script)}`
+        } transaction hash-script-data --script-data-file '${jsonToPath(this.dir, script)}'`
       )
         .toString()
         .trim();
