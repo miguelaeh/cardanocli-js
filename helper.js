@@ -143,7 +143,7 @@ exports.txInToString = (dir, txInList, isCollateral) => {
   return result;
 };
 
-exports.txOutToString = (txOutList) => {
+exports.txOutToString = (txOutList, dir = ".") => {
   let result = "";
   txOutList.forEach((txOut) => {
     result += `--tx-out "${txOut.address}+${txOut.value.lovelace}`;
@@ -152,7 +152,20 @@ exports.txOutToString = (txOutList) => {
       result += `+${txOut.value[asset]} ${asset}`;
     });
     result += `" `;
-    txOut.datumHash && (result += `--tx-out-datum-hash ${txOut.datumHash} `);
+
+    switch (true) {
+      case !!txOut.datumHash:
+        result += `--tx-out-datum-hash ${txOut.datumHash} `;
+        break;
+      case !!txOut.datumEmbedFile:
+        result += `--tx-out-datum-embed-file ${this.jsonToPath(
+          dir,
+          txOut.datumEmbedFile
+        )} `;
+        break;
+      case !!txOut.datumEmbedJSON:
+        result += `--tx-out-datum-embed-json ${txOut.datumEmbedJSON} `;
+    }
   });
   return result;
 };
@@ -234,7 +247,7 @@ exports.mintToString = (dir, minting) => {
   const usedScripts = [];
   result += minting
     .map((mint) => {
-      const stringifiedScript = JSON.stringify(mint.script)
+      const stringifiedScript = JSON.stringify(mint.script);
       if (usedScripts.includes(stringifiedScript)) return "";
       usedScripts.push(stringifiedScript);
       const script = this.jsonToPath(dir, mint.script);
