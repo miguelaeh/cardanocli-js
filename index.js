@@ -469,6 +469,7 @@ class CardanocliJs {
       const value = {};
       utxos.forEach((utxo) => {
         Object.keys(utxo.value).forEach((asset) => {
+          if (!asset || asset === "undefined") return;
           if (!value[asset]) value[asset] = 0;
           value[asset] += utxo.value[asset];
         });
