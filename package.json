@@ -3,6 +3,7 @@
   "version": "4.0.1",
   "description": "A library binding the cardano-cli to JavaScript",
   "main": "index.js",
+  "types": "./index.d.ts",
   "scripts": {
     "test": "jest"
   },
