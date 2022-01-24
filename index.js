@@ -1188,16 +1188,15 @@ class CardanocliJs {
 
   /**
    *
-   *
-   * @param {Value} value
+   * @param {options} options
    * @returns {lovelace}
    */
-  transactionCalculateMinValue(value) {
+  transactionCalculateMinValue(options) {
     this.queryProtocolParameters();
-    const multiAsset = multiAssetToString(value);
+    const multiAsset = multiAssetToString(options);
     return parseInt(
-      execSync(`${this.cliPath} transaction calculate-min-value \
-                --multi-asset ${multiAsset} \
+      execSync(`${this.cliPath} transaction calculate-min-required-utxo \
+                --tx-out ${multiAsset} \
                 --protocol-params-file ${this.protocolParametersPath}`)
         .toString()
         .replace(/\s+/g, " ")
