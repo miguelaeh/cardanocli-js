@@ -238,12 +238,12 @@ exports.mintToString = (dir, minting) => {
   return result;
 };
 
-exports.multiAssetToString = (value) => {
-  let result = "";
-  result += `"${value.lovelace}`;
-  Object.keys(value).forEach((asset) => {
+exports.multiAssetToString = (options) => {
+  let result = `"${options.address} + `;
+  result += `${options.value.lovelace}`;
+  Object.keys(options.value).forEach((asset) => {
     if (asset == "lovelace") return;
-    result += `+${value[asset]} ${asset}`;
+    result += `+${options.value[asset]} ${asset}`;
   });
   result += `"`;
   return result;
