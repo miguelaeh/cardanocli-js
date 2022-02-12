@@ -17,14 +17,14 @@ const cardanocliJs = new CardanocliJs({
 
 const deregisterWallet = (wallet) => {
   let account = wallet.name;
-  let keyDeposit = cardanocliJs.queryProtocolParameters().keyDeposit;
+  let stakeAddressDeposit = cardanocliJs.queryProtocolParameters().stakeAddressDeposit;
   let stakeCert = cardanocliJs.stakeAddressDeregistrationCertificate(account);
   let paymentAddress = cardanocliJs.wallet(account).paymentAddr;
   let balance = cardanocliJs.wallet(account).balance().value.lovelace;
   let tx = {
     txIn: cardanocliJs.queryUtxo(paymentAddress),
     txOut: [
-      { address: paymentAddress, value: { lovelace: balance + keyDeposit } },
+      { address: paymentAddress, value: { lovelace: balance + stakeAddressDeposit } },
     ],
     certs: [{ cert: stakeCert }],
     witnessCount: 2,
