@@ -140,6 +140,13 @@ declare namespace CardanocliJs {
     syncProgress: string,
   }
 
+  export interface KeySet {
+    addr: string;
+    skey: string;
+    vkey: string;
+    cert?: string;
+  }
+
   export interface Wallet {
     name: string,
     paymentAddr: string,
@@ -149,6 +156,8 @@ declare namespace CardanocliJs {
       value: any
     },
     reward: () => StakeAddressInfo | string,
+    payment: KeySet,
+    stake: KeySet,
   }
 
   export interface Pool {
