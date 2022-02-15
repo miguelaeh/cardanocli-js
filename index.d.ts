@@ -151,9 +151,24 @@ declare namespace CardanocliJs {
     reward: () => StakeAddressInfo | string,
   }
 
+  export interface Keys {
+    skey: string;
+    vkey: string;
+  }
+
+  export interface Node {
+    cert:    string;
+    counter: string;
+    skey:    string;
+    vkey:    string;
+  }
+
   export interface Pool {
     name: string,
     id: string,
+    node?: Node;
+    kes?:  Keys;
+    vrf?:  Keys;
   }
 
   export interface StakeAddressInfo {
@@ -201,10 +216,10 @@ declare namespace CardanocliJs {
 
   export interface Certificate {
     cert: string,
-    script: any,
-    datum: any,
-    redeemer: any,
-    executionUnits: any,
+    script?: any,
+    datum?: any,
+    redeemer?: any,
+    executionUnits?: any,
   }
 
   export interface Mint {
