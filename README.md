@@ -4,9 +4,12 @@
 
 This is a library, which wraps the cardano-cli with JavaScript and makes it possible to interact with the cli-commands much faster and more efficient.
 
-###### This library is brought to you by <b><a href="http://pipool.online/">Berry Pool</a></b>. You can support our work by delegating to our pool.
+###### This library was initially brought by [BerryPool](http://pipool.online/) and currently maintained by [Shareslake](https://www.shareslake.com). You can support the work by delegating to the Berry pool.
 
-###### Donations (ADA): addr1q97x8rfnkw4pmdgnwjzavl8jvg77tuy6wn3wm90x9emwgj8nhh356yzp7k3qwmhe4fk0g5u6kx5ka4rz5qcq4j7mvh2sg67tj5
+###### Donations (ADA):
+
+- Shareslake: addr1q9rsrh7kjhct7llm88dug6l5mh047gq6yq3wt3gjfd6uk3ldch4wp7w7v3ac4wp6q33gz2kemwn8ap6zch0u3za6pypshaa6ry
+- Berry: addr1q97x8rfnkw4pmdgnwjzavl8jvg77tuy6wn3wm90x9emwgj8nhh356yzp7k3qwmhe4fk0g5u6kx5ka4rz5qcq4j7mvh2sg67tj5
 
 ## Prerequisites
 
@@ -24,7 +27,7 @@ npm install cardanocli-js
 #### From source
 
 ```bash
-git clone https://github.com/Berry-Pool/cardanocli-js.git
+git clone https://github.com/shareslake/cardanocli-js.git
 cd cardanocli-js
 npm install
 ```
@@ -71,10 +74,10 @@ Check /examples for more use cases.
 
 ## Structure
 
-All files will be stored and used in the directory you choose when instantiating CardanocliJs (<code>dir</code>).
-The directory is split in two subfolders <code>tmp</code> and <code>priv</code>.
-In the <code>tmp</code> folder are stored protocol paramters, raw transactions, signed transactions and witnesses with unique identifiers.
-The <code>priv</code> folder is again divided into two subolders holding on one site the pools <code>pool</code> and on the other side the wallets <code>wallet</code> (like <a href="https://cardano-community.github.io/guild-operators/#/">CNTools</a> structure).
+All files will be stored and used in the directory you choose when instantiating CardanocliJs (`dir`).
+The directory is split in two subfolders `tmp` and `priv`.
+In the `tmp` folder are stored protocol paramters, raw transactions, signed transactions and witnesses with unique identifiers.
+The `priv` folder is again divided into two subolders holding on one site the pools `pool` and on the other side the wallets `wallet` (like [CNTools](https://cardano-community.github.io/guild-operators/#/) structure).
 
 Example structure:
 
