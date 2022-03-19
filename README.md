@@ -8,8 +8,8 @@ This is a library, which wraps the cardano-cli with JavaScript and makes it poss
 
 ###### Donations (ADA):
 
-- Shareslake: addr1q9rsrh7kjhct7llm88dug6l5mh047gq6yq3wt3gjfd6uk3ldch4wp7w7v3ac4wp6q33gz2kemwn8ap6zch0u3za6pypshaa6ry
-- Berry: addr1q97x8rfnkw4pmdgnwjzavl8jvg77tuy6wn3wm90x9emwgj8nhh356yzp7k3qwmhe4fk0g5u6kx5ka4rz5qcq4j7mvh2sg67tj5
+- Shareslake: `addr1q9rsrh7kjhct7llm88dug6l5mh047gq6yq3wt3gjfd6uk3ldch4wp7w7v3ac4wp6q33gz2kemwn8ap6zch0u3za6pypshaa6ry`
+- Berry: `addr1q97x8rfnkw4pmdgnwjzavl8jvg77tuy6wn3wm90x9emwgj8nhh356yzp7k3qwmhe4fk0g5u6kx5ka4rz5qcq4j7mvh2sg67tj5`
 
 ## Prerequisites
 
