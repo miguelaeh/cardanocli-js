@@ -38,7 +38,9 @@ const mintScript = {
   type: "sig",
 };
 const policy = cardanocliJs.transactionPolicyid(mintScript);
-const BERRYCOIN = policy + ".Berrycoin";
+const realAssetName = "Berrycoin"
+const assetName = Buffer.from(realAssetName).toString('hex')
+const BERRYCOIN = policy + "." + assetName;
 
 const tx = {
   txIn: wallet.balance().utxo,
