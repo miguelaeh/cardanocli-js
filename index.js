@@ -1108,7 +1108,7 @@ class CardanocliJs {
       .trim();
   }
 
-    /**
+  /**
    *
    * @param {object} script
    * @returns {string} Datum hash
