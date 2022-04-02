@@ -1,6 +1,6 @@
 {
   "name": "cardanocli-js",
-  "version": "4.1.0",
+  "version": "4.1.1",
   "description": "A library binding the cardano-cli to JavaScript",
   "main": "index.js",
   "types": "./index.d.ts",
