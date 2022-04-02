@@ -40,7 +40,7 @@ describe('Basics & Utilities', () => {
         expect(obj.hasOwnProperty('eMax')).toBeTruthy();
         expect(obj.hasOwnProperty('extraEntropy')).toBeTruthy();
         expect(obj.hasOwnProperty('maxBlockHeaderSize')).toBeTruthy();
-        expect(obj.hasOwnProperty('keyDeposit')).toBeTruthy();
+        expect(obj.hasOwnProperty('stakeAddressDeposit')).toBeTruthy();
         expect(obj.hasOwnProperty('nOpt')).toBeTruthy();
         expect(obj.hasOwnProperty('rho')).toBeTruthy();
         expect(obj.hasOwnProperty('a0')).toBeTruthy();
