@@ -1,6 +1,6 @@
 {
   "name": "cardanocli-js",
-  "version": "4.1.1",
+  "version": "4.1.2",
   "description": "A library binding the cardano-cli to JavaScript",
   "main": "index.js",
   "types": "./index.d.ts",
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Berry-Pool/cardanocli-js.git"
+    "url": "https://github.com/shareslake/cardanocli-js.git"
   },
   "author": "",
   "license": "ISC",
