@@ -145,8 +145,7 @@ exports.txOutToString = (txOutList) => {
     });
     if (assetOutStr)
       result += `+"${assetOutStr.slice(1)}"`;
-    result += ' ';
-    txOut.datumHash && (result += `--tx-out-datum-hash ${txOut.datumHash} `);
+    txOut.datumHash && (result += ` --tx-out-datum-hash ${txOut.datumHash}`);
   });
   return result;
 };
