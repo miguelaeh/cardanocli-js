@@ -135,14 +135,17 @@ exports.txInToString = (dir, txInList, isCollateral) => {
 
 exports.txOutToString = (txOutList) => {
   let result = "";
+  let assetOutStr;
   txOutList.forEach((txOut) => {
-    result += `--tx-out "${txOut.address}+${txOut.value.lovelace}`;
+    assetOutStr = "";
+    result += `--tx-out ${txOut.address}+${txOut.value.lovelace}`;
     Object.keys(txOut.value).forEach((asset) => {
       if (asset == "lovelace") return;
-      result += `+${txOut.value[asset]} ${asset}`;
+      assetOutStr += `+${txOut.value[asset]} ${asset}`;
     });
-    result += `" `;
-    txOut.datumHash && (result += `--tx-out-datum-hash ${txOut.datumHash}`);
+    if (assetOutStr)
+      result += `+"${assetOutStr.slice(1)}"`;
+    txOut.datumHash && (result += ` --tx-out-datum-hash ${txOut.datumHash}`);
   });
   return result;
 };
