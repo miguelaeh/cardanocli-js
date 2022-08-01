@@ -138,7 +138,7 @@ exports.txOutToString = (txOutList) => {
   let assetOutStr;
   txOutList.forEach((txOut) => {
     assetOutStr = "";
-    result += `--tx-out ${txOut.address}+${txOut.value.lovelace}`;
+    result += ` --tx-out ${txOut.address}+${txOut.value.lovelace}`;
     Object.keys(txOut.value).forEach((asset) => {
       if (asset == "lovelace") return;
       assetOutStr += `+${txOut.value[asset]} ${asset}`;
