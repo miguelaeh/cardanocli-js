@@ -1208,7 +1208,8 @@ class CardanocliJs {
     return parseInt(
       execSync(`${this.cliPath} transaction calculate-min-required-utxo \
                 --tx-out ${multiAsset} \
-                --protocol-params-file ${this.protocolParametersPath}`)
+                --protocol-params-file ${this.protocolParametersPath} \
+                --babbage-era`)
         .toString()
         .replace(/\s+/g, " ")
         .split(" ")[1]
