@@ -1,6 +1,6 @@
 // Typescript type definitions for cardanocli-js
 
-export class CardanocliJs {
+export default class CardanocliJs {
   constructor(options: CardanocliJs.ConstructorOptions);
 
   queryProtocolParameters(): any;
