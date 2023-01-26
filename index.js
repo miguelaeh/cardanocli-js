@@ -1157,10 +1157,10 @@ class CardanocliJs {
     }
     let signingParams = "";
     if (options.scriptFile) {
-      signingParams += "--script-file ${options.scriptFile} ";
+      signingParams += `--script-file ${options.scriptFile} `;
     }
     if (options.signingKey) {
-      signingParams += "--signing-key-file ${options.signingKey}";
+      signingParams += `--signing-key-file ${options.signingKey}`;
     }
     execSync(`${this.cliPath} transaction witness \
         --tx-body-file ${options.txBody} \
