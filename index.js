@@ -902,7 +902,7 @@ class CardanocliJs {
 
     const scriptInvalid = options.scriptInvalid ? "--script-invalid" : "";
     execSync(`${this.cliPath} transaction build-raw \
-                --alonzo-era \
+                ${this.era ? this.era : "--alonzo-era"} \
                 ${txInString} \
                 ${txOutString} \
                 ${txInCollateralString} \
@@ -922,8 +922,7 @@ class CardanocliJs {
                 } \
                 --fee ${options.fee ? options.fee : 0} \
                 --out-file ${this.dir}/tmp/tx_${UID}.raw \
-                --protocol-params-file ${this.protocolParametersPath} \
-                ${this.era}`);
+                --protocol-params-file ${this.protocolParametersPath}`);
 
     return `${this.dir}/tmp/tx_${UID}.raw`;
   }
