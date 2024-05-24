@@ -1,63 +1,71 @@
-const CardanocliJs = require("../index.js");
-const os = require("os");
-const path = require("path");
+import CardanoCliJs from "../index";
+import { CardanoCliJsOptions } from "../lib/cardanoclijs";
+import fs from 'fs';
 
-const dir = path.join(os.homedir(), "testnet");
-const shelleyPath = path.join(
-  os.homedir(),
-  "testnet",
-  "testnet-shelley-genesis.json"
-);
+const options = new CardanoCliJsOptions({ shelleyGenesisPath: `${__dirname}/../tests/assets/shelley-genesis.json` });
+const cli = new CardanoCliJs(options);
 
-const cardanocliJs = new CardanocliJs({
-  network: "testnet-magic 1097911063",
-  dir: dir,
-  shelleyGenesisPath: shelleyPath,
-});
-
-const createTransaction = (tx) => {
-  let raw = cardanocliJs.transactionBuildRaw(tx);
-  let fee = cardanocliJs.transactionCalculateMinFee({
-    ...tx,
-    txBody: raw,
+const createWallet = (account) => {
+  const payment = cardanocliJs.address.keyGen(account);
+  const stake = cardanocliJs.stake_address.keyGen(account);
+  cardanocliJs.stake_address.build(account);
+  const addr = cardanocliJs.address.build(account, {
+    paymentVkey: payment.vkey,
+    stakeVkey: stake.vkey,
   });
-  tx.txOut[0].value.lovelace -= fee;
-  return cardanocliJs.transactionBuildRaw({ ...tx, fee });
+  return addr;
 };
 
-const signTransaction = (wallet, tx, script) => {
-  return cardanocliJs.transactionSign({
-    signingKeys: [wallet.payment.skey, wallet.payment.skey],
-    txBody: tx,
-  });
-};
-
-const wallet = cardanocliJs.wallet("Berry");
+const walletName = "test-wallet";
+const wallet = createWallet(walletName);
 const mintScript = {
-  keyHash: cardanocliJs.addressKeyHash(wallet.name),
+  keyHash: cli.address.keyHash(walletName),
   type: "sig",
 };
-const policy = cardanocliJs.transactionPolicyid(mintScript);
+const scriptFile = fs.writeFileSync("/tmp/script.json", JSON.stringify(mintScript));
+const policyId = cli.transaction.transactionPolicyId(scriptFile);
 const realAssetName = "Berrycoin"
 const assetName = Buffer.from(realAssetName).toString('hex')
-const BERRYCOIN = policy + "." + assetName;
+const BERRYCOIN = policyId + "." + assetName;
 
-const tx = {
-  txIn: wallet.balance().utxo,
-  txOut: [
-    {
-      address: wallet.paymentAddr,
-      value: { ...wallet.balance().value, [BERRYCOIN]: 100 },
-    },
-  ],
-  mint: [
-    { action: "mint", quantity: 100, asset: BERRYCOIN, script: mintScript },
-  ],
-  witnessCount: 2,
-};
+const addr = fs.readFileSync(`${cli.options.dir}/priv/wallet/${walletName}/${walletName}.payment.addr`, 'utf8');
+const utxos = cli.query.utxo(addr);
+const balance = utxos.forEach((utxo) => {
+  Object.keys(utxo.value).forEach((asset) => {
+    if (!value[asset]) value[asset] = 0;
+    value[asset] += utxo.value[asset];
+  });
+});
 
-const raw = createTransaction(tx);
-const signed = signTransaction(wallet, raw);
-console.log(cardanocliJs.transactionView({ txFile: signed }));
-const txHash = cardanocliJs.transactionSubmit(signed);
-console.log(txHash);
+// Create raw tx
+const raw_opts = [];
+for (let utxo of utxos) {
+  raw_opts.push({ name: 'tx-in', value: `${utxo.txHash}#${utxo.txId}`});
+}
+raw_opts.push({ name: 'tx-out', value: `${addr} ${balance}`});
+// Mint 100 tokens
+raw_opts.push({ name: 'mint', value: `100 ${BERRYCOIN}`});
+raw_opts.push({ name: 'minting-script-file', value: scriptFile });
+const draftTxFile = cli.transaction.buildRaw(raw_opts);
+const fee = cli.transaction.calculateMinFee(draftTxFile, utxos.length, 1, 1);
+
+// Create the options again with the correct amount (removing the fee)
+const opts = [];
+for (let utxo of utxos) {
+  opts.push({ name: 'tx-in', value: `${utxo.txHash}#${utxo.txId}`});
+}
+opts.push({ name: 'tx-out', value: `${addr} ${balance - fee}`});
+// Mint 100 tokens
+opts.push({ name: 'mint', value: `100 ${BERRYCOIN}`});
+opts.push({ name: 'minting-script-file', value: scriptFile });
+opts.push({ name: 'fee', value: fee });
+const rawTxFile = cli.transaction.buildRaw(opts);
+
+const signedTxFile = cli.transaction.sign(rawTxFile, [
+  `${cli.options.dir}/priv/wallet/${walletName}/${walletName}.payment.skey`
+]);
+
+console.log(cli.transaction.view({ txFile: signedTxFile }));
+
+// Submit the transaction to actually mint the asset
+cli.transaction.submit(signedTxFile);
