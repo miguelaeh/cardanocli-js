@@ -31,10 +31,13 @@ npm install
 ## Getting started
 
 ```javascript
-const CardanocliJs = require("cardanocli-js");
-const shelleyGenesisPath = "/home/ada/mainnet-shelley-genesis.json";
-
-const cardanocliJs = new CardanocliJs({ shelleyGenesisPath });
+const { CardanoCliJs, CardanoCliJsOptions } = require("cardanocli-js");
+const shelleyGenesisPath = "/home/ada/mainnet-shelley-genesis.json"; // Update this path to the actual path
+const options = new CardanoCliJsOptions({
+    shelleyGenesisPath: '/home/miguelaeh/projects/cardano-cli-agent/cardanocli-js/tests/assets/shelley-genesis.json'
+    // network: 4, // Uncomment this line to use a testnet by adding the testnet magic
+});
+const cardanocliJs = new CardanocliJs(options);
 
 const createWallet = (account) => {
   const payment = cardanocliJs.address.keyGen(account);
