@@ -1,3 +1,4 @@
 import { CardanoCliJs } from "./lib/cardanoclijs";
+import { CardanoCliJsOptions } from "./lib/cardanoclijs";
 
-export default CardanoCliJs;
+export { CardanoCliJs, CardanoCliJsOptions };

@@ -1,5 +1,5 @@
-import CardanoCliJs from "../index";
-import { CardanoCliJsOptions } from "../lib/cardanoclijs";
+import { CardanoCliJs, CardanoCliJsOptions } from "../index";
+
 import fs from 'fs';
 
 const options = new CardanoCliJsOptions({ shelleyGenesisPath: `${__dirname}/../tests/assets/shelley-genesis.json` });

@@ -2,7 +2,7 @@ import { CardanoCliJs } from "./cardanoclijs";
 import { CommandParameter } from "./types";
 
 /**
- * Super class that all CLI commands extend. =
+ * Super class that all CLI commands extend.
  * Makes it easy to run subcommands
  */
 export abstract class CliCommand {
