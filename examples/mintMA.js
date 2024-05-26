@@ -39,8 +39,8 @@ const balance = utxos.forEach((utxo) => {
 
 // Create raw tx
 const raw_opts = [];
-for (let utxo of utxos) {
-  raw_opts.push({ name: 'tx-in', value: `${utxo.txHash}#${utxo.txId}`});
+for (let utxo of Object.keys(utxos)) {
+  raw_opts.push({ name: 'tx-in', value: utxo});
 }
 raw_opts.push({ name: 'tx-out', value: `${addr} ${balance}`});
 // Mint 100 tokens
@@ -51,8 +51,8 @@ const fee = cli.transaction.calculateMinFee(draftTxFile, utxos.length, 1, 1);
 
 // Create the options again with the correct amount (removing the fee)
 const opts = [];
-for (let utxo of utxos) {
-  opts.push({ name: 'tx-in', value: `${utxo.txHash}#${utxo.txId}`});
+for (let utxo of Object.keys(utxos)) {
+  opts.push({ name: 'tx-in', value: utxo});
 }
 opts.push({ name: 'tx-out', value: `${addr} ${balance - fee}`});
 // Mint 100 tokens

@@ -52,7 +52,7 @@ const walletAddr = createWallet("my-wallet-name");
 console.log("My wallet address:", walletAddr);
 ```
 
-Check /examples for more use cases.
+Check `/examples` for more use cases. If you have doubts on how to use a specific command you can also check the `tests` folder, where all the commands are tested.
 
 ## Tests
 

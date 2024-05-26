@@ -1,15 +1,6 @@
 import { CliCommand } from "./command";
 import { CommandParameter } from "./types";
 
-type TxIn = {
-    txHash: string,
-    txId: number,
-    script?: any,
-    datum: any,
-    redeemer: any,
-    executionUnits: [number, number],
-}
-
 export class TransactionCommand extends CliCommand {
     command = "transaction";
 
