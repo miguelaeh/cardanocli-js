@@ -1,86 +1,53 @@
-const CardanocliJs = require("../index.js");
-const os = require("os");
-const path = require("path");
-const fetch = require("sync-fetch");
+import CardanoCliJs from "../index";
+import { CardanoCliJsOptions } from "../lib/cardanoclijs";
 
-const dir = path.join(os.homedir(), "testnet");
-const shelleyPath = path.join(
-  os.homedir(),
-  "testnet",
-  "testnet-shelley-genesis.json"
-);
+const options = new CardanoCliJsOptions({ shelleyGenesisPath: `${__dirname}/../tests/assets/shelley-genesis.json` });
+const cli = new CardanoCliJs(options);
 
-const cardanocliJs = new CardanocliJs({
-  network: "testnet-magic 1097911063",
-  dir: dir,
-  shelleyGenesisPath: shelleyPath,
-});
-
-const createPool = (name) => {
-  cardanocliJs.nodeKeyGenKES(name);
-  cardanocliJs.nodeKeyGen(name);
-  cardanocliJs.nodeIssueOpCert(name);
-  cardanocliJs.nodeKeyGenVRF(name);
-  return cardanocliJs.pool(name);
+const createWallet = (account) => {
+  const payment = cardanocliJs.address.keyGen(account);
+  const stake = cardanocliJs.stake_address.keyGen(account);
+  cardanocliJs.stake_address.build(account);
+  const addr = cardanocliJs.address.build(account, {
+    paymentVkey: payment.vkey,
+    stakeVkey: stake.vkey,
+  });
+  return addr;
 };
 
-const registerPool = (pool, wallet, data) => {
-  let name = pool.name;
-  let poolId = cardanocliJs.stakePoolId(name);
-  let poolCert = cardanocliJs.stakePoolRegistrationCertificate(name, data);
-  let delegCert = cardanocliJs.stakeAddressDelegationCertificate(
-    wallet.name,
-    poolId
-  );
-  let poolDeposit = cardanocliJs.queryProtocolParameters().poolDeposit;
-  let tx = {
-    txIn: wallet.balance().utxo,
-    txOut: [
-      {
-        address: wallet.paymentAddr,
-        value: { lovelace: wallet.balance().value.lovelace - poolDeposit },
-      },
-    ],
-    witnessCount: 3,
-    certs: [{ cert: poolCert }, { cert: delegCert }],
-  };
-  let txBodyRaw = cardanocliJs.transactionBuildRaw(tx);
-  let fee = cardanocliJs.transactionCalculateMinFee({
-    ...tx,
-    txBody: txBodyRaw,
-  });
-  tx.txOut[0].value.lovelace -= fee;
-  let txBody = cardanocliJs.transactionBuildRaw({ ...tx, fee });
-  let txSigned = cardanocliJs.transactionSign({
-    txBody,
-    signingKeys: [wallet.payment.skey, wallet.stake.skey, pool.node.skey],
-  });
-  return txSigned;
-};
+const walletName = "test-wallet";
+const wallet = createWallet(walletName);
 
-let pool = createPool("BerryJs");
+const poolName = "test-pool";
+const poolKesKeys = cli.node.keyGenKES(poolName);
+const poolKeys = cli.node.keyGen(poolName);
+const poolOpCert = cli.node.issueOpCert(poolName, {});
+const poolVrfKeys = cli.node.keyGenVRF(poolName);
 
-const wallet = cardanocliJs.wallet("Ada");
-console.log(wallet);
-
-const poolData = {
-  pledge: cardanocliJs.toLovelace(100),
-  margin: 0.015,
-  cost: cardanocliJs.toLovelace(340),
-  owners: [wallet.stake.vkey],
-  rewardAccount: wallet.stake.vkey,
+const poolId = cli.stake_pool.id(poolName);
+const poolCert = cli.stake_pool.registrationCertificate(poolName, {
+  pledge: 100000000,
+  margin: 0.0015,
+  cost: 340000000,
+  url: "https://test-url.com",
+  metaHash: cli.stake_pool.metadataHash({
+    name: "YourPoolName",
+    description: "Your pool description",
+    ticker: "TEST",
+    homepage: "https://yourpoollink.com"
+  }),
+  rewardAccountFile: `${cli.options.dir}/priv/wallet/${walletName}/${walletName}.stake.vkey`,
+  ownersStakeVKeyFiles: [ `${cli.options.dir}/priv/wallet/${walletName}/${walletName}.stake.vkey` ],
   relays: [
     { host: "relay.one.io", port: 3001 },
     { host: "relay.two.io", port: 3001 },
   ],
-  url: "<URL>",
-  metaHash: cardanocliJs.stakePoolMetadataHash(fetch("<URl>").text()),
-};
+});
 
-console.log(poolData);
+const stakeAddrDelegCert = cli.stake_address.delegationCertificate(walletName, { stakePoolId: poolId });
+const poolDeposit = cli.query.protocolParameters().poolDeposit;
 
-let tx = registerPool(pool, wallet, poolData);
-
-let txHash = cardanocliJs.transactionSubmit(tx);
-
-console.log("TxHash: " + txHash);
+// Just create the transaction as always and sign with 3 witness count:
+// `${cli.options.dir}/priv/wallet/${walletName}/${walletName}.payment.skey`
+// `${cli.options.dir}/priv/wallet/${walletName}/${walletName}.stake.vkey`
+// `${cli.options.dir}/priv/wallet/${poolName}/${poolName}.node.skey`
