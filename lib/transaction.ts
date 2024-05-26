@@ -24,7 +24,7 @@ export class TransactionCommand extends CliCommand {
         if (!tx_out) throw new Error("At least one tx-out must be provided");
 
         const invalid_hereafter = options.find((o) => o.name === "invalid-hereafter");
-        if (!invalid_hereafter) options.push({ name: "invalid-hereafter", value: this.cli.query.tip().slot + 10000 });
+        if (!invalid_hereafter) options.push({ name: "invalid-hereafter", value: Number(this.cli.query.tip().slot) + 10000 });
         const invalid_before = options.find((o) => o.name === "invalid-before");
         if (!invalid_before) options.push({ name: "invalid-before", value: 0 });
         const fee = options.find((o) => o.name === "fee");
@@ -34,7 +34,7 @@ export class TransactionCommand extends CliCommand {
         const out_file = `/tmp/transaction-${uid}.raw`;
         options.push({ name: "out-file", value: out_file });
 
-        this.run("build-raw", options, true);
+        this.run("build-raw", options);
 
         return out_file;
     }
@@ -50,17 +50,17 @@ export class TransactionCommand extends CliCommand {
         if (!tx_out) throw new Error("At least one tx-out must be provided");
 
         const invalid_hereafter = options.find((o) => o.name === "invalid-hereafter");
-        if (!invalid_hereafter) options.push({ name: "invalid-hereafter", value: this.cli.query.tip().slot + 10000 });
+        if (!invalid_hereafter) options.push({ name: "invalid-hereafter", value: Number(this.cli.query.tip().slot) + 10000 });
         const invalid_before = options.find((o) => o.name === "invalid-before");
         if (!invalid_before) options.push({ name: "invalid-before", value: 0 });
-        const protocol_params = options.find((o) => o.name === "protocol-params-file");
-        if (!protocol_params) options.push({ name: "protocol-params-file", value: this.cli.query.protocolParameters() });
+        //const protocol_params = options.find((o) => o.name === "protocol-params-file");
+        //if (!protocol_params) options.push({ name: "protocol-params-file", value: this.cli.query.protocolParametersFile() });
 
         let uid = Math.random().toString(36).substring(2, 9);
         const out_file = `/tmp/transaction-${uid}.raw`;
         options.push({ name: "out-file", value: out_file });
 
-        this.run("build", options);
+        this.run("build", options, true);
 
         return out_file;
     }
@@ -84,7 +84,7 @@ export class TransactionCommand extends CliCommand {
             { name: "tx-in-count", value: txInCount },
             { name: "tx-out-count", value: txOutCount },
             { name: "witness-count", value: witnessCount },
-            { name: "protocol-params-file", value: this.cli.query.protocolParameters() },
+            { name: "protocol-params-file", value: this.cli.query.protocolParametersFile() },
         ]);
         const minFee = res.split(" ")[0];
         return parseInt(minFee);
@@ -182,7 +182,7 @@ export class TransactionCommand extends CliCommand {
      */
     calculateMinRequiredUtxo(options: CommandParameter[]) : string {
         const protocol_params = options.find((o) => o.name === "protocol-params-file");
-        if (!protocol_params) options.push({ name: "protocol-params-file", value: this.cli.query.protocolParameters() });
+        if (!protocol_params) options.push({ name: "protocol-params-file", value: this.cli.query.protocolParametersFile() });
 
         const res = this.run("calculate-min-required-utxo", options);
         const minRequiredUtxo = res.split(" ")[1];
@@ -211,8 +211,8 @@ export class TransactionCommand extends CliCommand {
             throw new Error("Only one of txBodyFile or txFile must be provided to the txId function");
         }
         const params = [];
-        if (options.txBodyFile) params.push({name: "ts-body-file", value: options.txBodyFile });
-        if (options.txFile) params.push({name: "ts-body-file", value: options.txFile });
+        if (options.txBodyFile) params.push({name: "tx-body-file", value: options.txBodyFile });
+        if (options.txFile) params.push({name: "tx-body-file", value: options.txFile });
         return this.run("txid", params);
     }
 
@@ -231,8 +231,8 @@ export class TransactionCommand extends CliCommand {
         const params = [
             { name: "output-json", value: "" }
         ];
-        if (options.txBodyFile) params.push({name: "ts-body-file", value: options.txBodyFile });
-        if (options.txFile) params.push({name: "ts-body-file", value: options.txFile });
+        if (options.txBodyFile) params.push({name: "tx-body-file", value: options.txBodyFile });
+        if (options.txFile) params.push({name: "tx-body-file", value: options.txFile });
         return this.run("view", params);
     }
 }

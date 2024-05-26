@@ -4,7 +4,7 @@ import fs from 'fs';
 
 const accountName = "test-account";
 
-const options = new CardanoCliJsOptions({ shelleyGenesisPath: `${__dirname}/assets/shelley-genesis.json` });
+const options = new CardanoCliJsOptions({ shelleyGenesisPath: `${__dirname}/assets/shelley-genesis.json`, network: "4" });
 const cli = new CardanoCliJs(options);
 
 let stakeAddrFile = "";
@@ -53,54 +53,8 @@ describe('Stake Address Commands', () => {
     });
 });
 
-
 const poolName = "test-pool";
 let metadataHash = "";
-
-describe('Stake Pool Commands', () => {
-    test('stake-pool id', () => {
-        const id = cli.stake_pool.id(poolName);
-        expect(id).toBeTruthy();
-    });
-
-    test('stake-pool metadata-hash', () => {
-        const metadata = {
-            name: "YourPoolName",
-            description: "Your pool description",
-            ticker: "TEST",
-            homepage: "https://yourpoollink.com"
-        };
-        metadataHash = cli.stake_pool.metadataHash(metadata);
-        expect(metadataHash).toBeTruthy();
-    });
-
-    test('stake-pool registration-certificate', () => {
-        const certFile = cli.stake_pool.registrationCertificate(
-            poolName,
-            {
-                pledge: 3,
-                margin: 4,
-                cost: 5,
-                url: "https://test.example.com/pool",
-                metaHash: metadataHash,
-                rewardAccountFile: 'priv/wallet/test-account/test-account.payment.vkey',
-                ownersStakeVKeyFiles: ['priv/wallet/test-account/test-account.stake.vkey'],
-                relays: [{ host: "some-node.com", port: 1111 }],
-            },
-        );
-
-        expect(fs.existsSync(certFile)).toBe(true);
-        // Check if files are not empty
-        expect(fs.statSync(certFile).size).toBeGreaterThan(0);
-    });
-
-    test('stake-pool deregistration-certificate', () => {
-        const certFile = cli.stake_pool.deRegistrationCertificate(poolName, 30);
-        expect(fs.existsSync(certFile)).toBe(true);
-        // Check if files are not empty
-        expect(fs.statSync(certFile).size).toBeGreaterThan(0);
-    });
-});
 
 describe('Node Commands', () => {
     test('node key-gen', () => {
@@ -173,7 +127,7 @@ describe('Address Commands', () => {
     });
 
     test('address build', () => {
-        const paymentAddrFile = cli.address.build(accountName, {});
+        paymentAddrFile = cli.address.build(accountName, {});
         expect(fs.existsSync(paymentAddrFile)).toBe(true);
         // Check if files are not empty
         expect(fs.statSync(paymentAddrFile).size).toBeGreaterThan(0);
@@ -198,6 +152,51 @@ describe('Address Commands', () => {
         const address = fs.readFileSync(paymentAddrFile, "utf-8");
         const info = cli.address.info(address);
         expect(info).toBeTruthy();
+    });
+});
+
+describe('Stake Pool Commands', () => {
+    test('stake-pool id', () => {
+        const id = cli.stake_pool.id(poolName);
+        expect(id).toBeTruthy();
+    });
+
+    test('stake-pool metadata-hash', () => {
+        const metadata = {
+            name: "YourPoolName",
+            description: "Your pool description",
+            ticker: "TEST",
+            homepage: "https://yourpoollink.com"
+        };
+        metadataHash = cli.stake_pool.metadataHash(metadata);
+        expect(metadataHash).toBeTruthy();
+    });
+
+    test('stake-pool registration-certificate', () => {
+        const certFile = cli.stake_pool.registrationCertificate(
+            poolName,
+            {
+                pledge: 3,
+                margin: 0.001,
+                cost: 5,
+                url: "https://test.example.com/pool",
+                metaHash: metadataHash,
+                rewardAccountFile: `priv/wallet/${accountName}/${accountName}.stake.vkey`,
+                ownersStakeVKeyFiles: [`priv/wallet/${accountName}/${accountName}.stake.vkey`],
+                relays: [{ host: "some-node.com", port: 1111 }],
+            },
+        );
+
+        expect(fs.existsSync(certFile)).toBe(true);
+        // Check if files are not empty
+        expect(fs.statSync(certFile).size).toBeGreaterThan(0);
+    });
+
+    test('stake-pool deregistration-certificate', () => {
+        const certFile = cli.stake_pool.deRegistrationCertificate(poolName, 30);
+        expect(fs.existsSync(certFile)).toBe(true);
+        // Check if files are not empty
+        expect(fs.statSync(certFile).size).toBeGreaterThan(0);
     });
 });
 
@@ -227,11 +226,13 @@ describe('Transaction Commands', () => {
 
     test('transaction build', () => {
         // NOTE: We use a mock transaction for the tests, we won't submit it
+        // TODO: this is an unstable test as it depends on the address below and that the UTxOs do not contain assets in the future
+        const utxos = cli.query.utxo("addr_test1qz63slx7l0zmf8wuz76z8sre7pchwgdq8zp28vn9h4xp9cyq7vn27vqzw0ge6kj5r4zm4fpwhszzvkqkwddsy66lxjjqxnc9zk");
+        const utxoIds = Object.keys(utxos);
         txFilePath = cli.transaction.build([
-            { name: "tx-in", value: "4e3a6e7fdcb0d0efa17bf79c13aed2b4cb9baf37fb1aa2e39553d5bd720c5c99#4" },
-            { name: "tx-out", value: "addr_test1wr64gtafm8rpkndue4ck2nx95u4flhwf643l2qmg9emjajg2ww0nj+0" },
-            { name: "tx-out", value: "addr_test1wr64gtafm8rpkndue4ck2nx95u4flhwf643l2qmg9emjajg2ww0nj+0" },
-            { name: "fee", value: minFee },
+            { name: "tx-in", value: utxoIds[0] },
+            { name: "tx-out", value: "addr_test1qz63slx7l0zmf8wuz76z8sre7pchwgdq8zp28vn9h4xp9cyq7vn27vqzw0ge6kj5r4zm4fpwhszzvkqkwddsy66lxjjqxnc9zk+1000000" },
+            { name: "change-address", value: "addr_test1qz63slx7l0zmf8wuz76z8sre7pchwgdq8zp28vn9h4xp9cyq7vn27vqzw0ge6kj5r4zm4fpwhszzvkqkwddsy66lxjjqxnc9zk" },
         ]);
 
         expect(fs.existsSync(txFilePath)).toBe(true);
@@ -249,7 +250,7 @@ describe('Transaction Commands', () => {
         const id = cli.transaction.txId({ txFile: txFilePath });
         expect(id).toBeTruthy();
     });
-    
+
     test('transaction view', () => {
         const view = cli.transaction.txId({ txFile: txFilePath });
         expect(view).toBeTruthy();

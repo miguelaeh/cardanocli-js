@@ -60,6 +60,8 @@ Install npm dev dependencies using `npm install --also=dev`.
 
 Tests are using Jest framework and can be run by using `npm run-script test` command.
 
+Tests are configured to run with the Sancho network. You may need to update your `cardano-cli` binary to the sancho one in order to run the tests.
+
 ## Major changes
 
 ### 5.0.0

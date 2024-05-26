@@ -1,5 +1,4 @@
 import { CliCommand } from "./command";
-import { Utxo } from "./types";
 
 const fs = require("fs");
 
@@ -11,7 +10,7 @@ export class QueryCommand extends CliCommand {
      * @returns string - Path to file containing protocol parameters
      */
     protocolParameters() : any {
-        const file = `${this.cli.options.dir}/tmp/protocolParams.json`;
+        const file = `/tmp/protocolParams.json`;
 
         const opts = [{ name: "out-file", value: file }];
         this.run("protocol-parameters", opts, true);
@@ -19,11 +18,23 @@ export class QueryCommand extends CliCommand {
     }
 
     /**
+     * Fetch the protocol parameters into a file
+     * @returns string - Path to file containing protocol parameters
+     */
+    protocolParametersFile() : any {
+        const file = `/tmp/protocolParams.json`;
+
+        const opts = [{ name: "out-file", value: file }];
+        this.run("protocol-parameters", opts, true);
+        return file;
+    }
+
+    /**
      *
      * @returns The tip as a number
      */
     tip(): any {
-        return this.run("tip", [], true);
+        return JSON.parse(this.run("tip", [], true));
     }
 
     /**
@@ -43,7 +54,7 @@ export class QueryCommand extends CliCommand {
      * @param address Address string
      * @returns Array of UTxO objects
      */
-    utxo(address: string): Utxo[] {
+    utxo(address: string): any[] {
         const rawResult = this.run("utxo", [
             {
                 name: "address",
@@ -62,7 +73,7 @@ export class QueryCommand extends CliCommand {
      * @returns JSON object with the governance state
      */
     govState() {
-        const file = `${this.cli.options.dir}/tmp/govState.json`;
+        const file = `/tmp/govState.json`;
         const opts = [{ name: "out-file", value: file }];
         this.run("gov-state", opts, true);
         return JSON.parse(fs.readFileSync(file));
@@ -85,7 +96,7 @@ export class QueryCommand extends CliCommand {
             params.push({ name: "drep-verification-key-file", value: opts.drepVKeyFile });
         }
 
-        const file = `${this.cli.options.dir}/tmp/drepState.json`;
+        const file = `/tmp/drepState.json`;
         params.push({ name: "out-file", value: file });
         this.run("drep-state", params, true);
         return JSON.parse(fs.readFileSync(file));
@@ -108,7 +119,7 @@ export class QueryCommand extends CliCommand {
             params.push({ name: "drep-verification-key-file", value: opts.drepVKeyFile });
         }
 
-        const file = `${this.cli.options.dir}/tmp/drepState.json`;
+        const file = `/tmp/drepState.json`;
         params.push({ name: "out-file", value: file });
         this.run("drep-stake-distribution", params, true);
         return JSON.parse(fs.readFileSync(file));

@@ -101,6 +101,6 @@ export class CardanoCliJs {
     getKesPeriod() : number {
         const slotsPerKESPeriod = this.options.shelleyGenesis.slotsPerKESPeriod;
         const tip = this.query.tip();
-        return tip.slot / slotsPerKESPeriod;
+        return Math.ceil(Number(tip.slot) / Number(slotsPerKESPeriod));
     }
 }

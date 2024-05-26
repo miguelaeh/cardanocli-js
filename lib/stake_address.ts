@@ -70,7 +70,7 @@ export class StakeAddressCommand extends CliCommand {
     registrationCertificate(account: string): string {
         const privAccountDir = `${this.cli.options.dir}/priv/wallet/${account}`;
         const stakeVKeyFile = `${privAccountDir}/${account}.stake.vkey`;
-        const stakeRegCertFile = `${privAccountDir}/${account}/${account}-reg.stake.cert`;
+        const stakeRegCertFile = `${privAccountDir}/${account}-reg.stake.cert`;
 
         filesShouldExist([stakeVKeyFile]);
         filesShouldNotExist([stakeRegCertFile]);
@@ -93,7 +93,7 @@ export class StakeAddressCommand extends CliCommand {
      deRegistrationCertificate(account: string, options: { stakeScriptFile?: string, amount?: string }): string {
         const privAccountDir = `${this.cli.options.dir}/priv/wallet/${account}`;
         const stakeVKeyFile = `${privAccountDir}/${account}.stake.vkey`;
-        const stakeDeregCertFile = `${privAccountDir}/${account}/${account}-dereg.stake.cert`;
+        const stakeDeregCertFile = `${privAccountDir}/${account}-dereg.stake.cert`;
 
         filesShouldExist([stakeVKeyFile]);
         if (options.stakeScriptFile) filesShouldExist([options.stakeScriptFile]);
@@ -121,7 +121,7 @@ export class StakeAddressCommand extends CliCommand {
      delegationCertificate(account: string, options: { stakePoolId: string, stakeScriptFile?: string }): string {
         const privAccountDir = `${this.cli.options.dir}/priv/wallet/${account}`;
         const stakeVKeyFile = `${privAccountDir}/${account}.stake.vkey`;
-        const stakeDelegCertFile = `${privAccountDir}/${account}/${account}.deleg.cert`;
+        const stakeDelegCertFile = `${privAccountDir}/${account}.deleg.cert`;
 
         if (!options.stakePoolId) throw "Missing options.stakePoolId in call to delegationCertificate";
 

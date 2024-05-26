@@ -1,5 +1,5 @@
 import { CliCommand } from "./command";
-import { filesShouldExist, objectToFile, removeFile, mkdirp } from "./helpers";
+import { filesShouldExist, objectToFile, removeFile, mkdirp, filesShouldNotExist } from "./helpers";
 
 export class StakePoolCommand extends CliCommand {
     command = "stake-pool";
@@ -61,11 +61,12 @@ export class StakePoolCommand extends CliCommand {
         const coldVkey = `${nodeAccountDir}/${poolName}.node.vkey`;
         const vrfVKey = `${nodeAccountDir}/${poolName}.vrf.vkey`;
         const poolRegCertFile = `${nodeAccountDir}/${poolName}-reg.pool.cert`;
-        
-	mkdirp(nodeAccountDir);
-        filesShouldExist([ nodeAccountDir, coldVkey, vrfVKey, poolRegCertFile ]);
 
-        const params = [
+	    mkdirp(nodeAccountDir);
+        filesShouldExist([ nodeAccountDir, coldVkey, vrfVKey ]);
+        filesShouldNotExist([poolRegCertFile]);
+
+        let params = [
             { name: "cold-verification-key-file", value: coldVkey },
             { name: "vrf-verification-key-file", value: vrfVKey },
             { name: "pool-pledge", value: options.pledge },
@@ -77,7 +78,8 @@ export class StakePoolCommand extends CliCommand {
             { name: "out-file", value: poolRegCertFile },
         ];
         const owners = options.ownersStakeVKeyFiles.map((o: string) => ({ name: "pool-owner-stake-verification-key-file", value: o }));
-        params.concat(owners);
+        params = params.concat(owners);
+
         const relays = options.relays.map((r: any) => {
             if (!((r.host || r.ip) && r.port) && !r.multiHost)
                 throw new Error("Relay is missing arguments");
@@ -92,7 +94,7 @@ export class StakePoolCommand extends CliCommand {
         }).flat();
         params.concat(relays);
 
-        this.run("registration-certificate", params);
+        this.run("registration-certificate", params, true);
 
         return poolRegCertFile;
     }
@@ -107,6 +109,8 @@ export class StakePoolCommand extends CliCommand {
         const nodeAccountDir = `${this.cli.options.dir}/priv/pool/${poolName}`;
         const coldVkey = `${nodeAccountDir}/${poolName}.node.vkey`;
         const poolDeRegCertFile = `${nodeAccountDir}/${poolName}-dereg.pool.cert`;
+
+        mkdirp(nodeAccountDir);
 
         this.run("deregistration-certificate", [
             { name: "cold-verification-key-file", value: coldVkey },

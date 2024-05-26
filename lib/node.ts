@@ -132,8 +132,7 @@ export class NodeCommand extends CliCommand {
             { name: "operational-certificate-issue-counter-file", value: nodeCounter },
             { name: "kes-period", value: options.kesPeriod ? options.kesPeriod : this.cli.getKesPeriod()},
             { name: "out-file", value: nodeCert },
-            ],
-            true
+            ]
         );
 
         return nodeCert;
