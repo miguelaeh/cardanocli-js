@@ -2,9 +2,10 @@
   "name": "cardanocli-js",
   "version": "5.0.0",
   "description": "A library wrapping the Cardano CLI for Javascript and Typescript",
-  "main": "index.ts",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "jest -i"
+    "test": "jest -i",
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
